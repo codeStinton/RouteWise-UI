@@ -35,6 +35,7 @@ export default function HomePage() {
     },
   ];
 
+  const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [visibleStates, setVisibleStates] = useState<boolean[]>(() =>
     new Array(destinationSections.length).fill(false)
   );
