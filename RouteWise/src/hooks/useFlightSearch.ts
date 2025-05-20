@@ -1,16 +1,18 @@
 import { useQuery } from '@tanstack/react-query';
-import axios from 'axios';
+import type { Flight } from '../types/flight';
+import { mockFlights } from '../mocks/mockFlights';
 
-interface Params {
+export interface FlightParams {
   origin: string;
   destination: string;
 }
 
-export const useFlightSearch = (params: Params) =>
-  useQuery(['flights', params], async () => {
-    const { data } = await axios.get(
-      `${import.meta.env.VITE_API_URL}/api/flight/search`,
-      { params }
-    );
-    return data;
+export function useFlightSearch(params: FlightParams) {
+  return useQuery<Flight[]>({
+    queryKey: ['flights', params],
+    queryFn: async () => {
+      return mockFlights;
+    },
+    staleTime: 5 * 60 * 1000,
   });
+}
