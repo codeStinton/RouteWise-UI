@@ -39,9 +39,10 @@ export default function HomePage() {
   //  Scroll‑in animation helpers
   // ───────────────────────────────────────────────────────────
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const [visibleStates, setVisibleStates] = useState<boolean[]>(
-    () => new Array(destinationSections.length).fill(false)
+  const [visibleStates, setVisibleStates] = useState<boolean[]>(() =>
+    new Array(destinationSections.length).fill(false)
   );
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   useEffect(() => {
     const observers: IntersectionObserver[] = [];
@@ -134,13 +135,11 @@ export default function HomePage() {
               />
               <button
                 type="button"
-                className="
-                  mt-2 rounded border bg-white
-                  px-3 py-2 text-sm text-[#021952]
-                  hover:bg-gray-100
-                "
+                onClick={() => setShowAdvanced((p) => !p)}
+                aria-expanded={showAdvanced} /* accessibility */
+                className="mt-2 rounded border bg-white px-3 py-2 text-sm text-[#021952] hover:bg-gray-100"
               >
-                Advanced Options
+                {showAdvanced ? "Hide Options" : "Advanced Options"}
               </button>
             </div>
 
@@ -173,6 +172,69 @@ export default function HomePage() {
                 Search
               </button>
             </div>
+            {/* ── Advanced options panel ───────────────── */}
+            <div
+              className={`
+      w-full overflow-hidden
+      transition-[max-height] duration-500 ease-in-out
+      ${showAdvanced ? "max-h-96 mt-4" : "max-h-0"}
+    `}
+            >
+              <div className="flex flex-wrap gap-4 mb-4">
+                <div className="flex-1 min-w-[120px]">
+                  <input
+                    type="number"
+                    min="1"
+                    placeholder="Max Price ($)"
+                    className="w-full rounded border bg-white px-3 py-2"
+                  />
+                </div>
+
+                <div className="flex-1 min-w-[140px]">
+                  <select className="w-full rounded border bg-white px-3 py-2">
+                    <option value="">Cabin Class</option>
+                    <option>Economy</option>
+                    <option>Premium Economy</option>
+                    <option>Business</option>
+                    <option>First</option>
+                  </select>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <input type="checkbox" id="nonStop" className="h-5 w-5" />
+                  <label htmlFor="nonStop" className="text-sm">
+                    Non-stop only
+                  </label>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-4">
+                <div className="flex-1 min-w-[120px]">
+                  <input
+                    type="number"
+                    min="1"
+                    placeholder="Max Price ($)"
+                    className="w-full rounded border bg-white px-3 py-2"
+                  />
+                </div>
+
+                <div className="flex-1 min-w-[140px]">
+                  <select className="w-full rounded border bg-white px-3 py-2">
+                    <option value="">Cabin Class</option>
+                    <option>Economy</option>
+                    <option>Premium Economy</option>
+                    <option>Business</option>
+                    <option>First</option>
+                  </select>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <input type="checkbox" id="nonStop" className="h-5 w-5" />
+                  <label htmlFor="nonStop" className="text-sm">
+                    Non-stop only
+                  </label>
+                </div>
+              </div>
+            </div>
           </form>
         </div>
       </div>
@@ -203,7 +265,9 @@ export default function HomePage() {
         {destinationSections.map((sec, idx) => (
           <div
             key={idx}
-            ref={(el) => (sectionRefs.current[idx] = el)}
+            ref={(el) => {
+              sectionRefs.current[idx] = el;
+            }}
             style={{ transitionDelay: `${idx * 100}ms` }}
             className={
               `max-w-5xl mx-auto px-6 py-6 flex flex-col md:flex-row items-center gap-10 min-h-[40vh] transition-all duration-700 ease-out transform ` +
@@ -237,11 +301,7 @@ export default function HomePage() {
               className="text-blue-600"
               viewBox="0 0 24 24"
             >
-              <path
-                fillRule="evenodd"
-                clipRule="evenodd"
-                d=""
-              />
+              <path fillRule="evenodd" clipRule="evenodd" d="" />
             </svg>
             <span>RouteWise</span>
           </div>

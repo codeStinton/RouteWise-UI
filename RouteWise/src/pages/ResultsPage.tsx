@@ -8,16 +8,16 @@ export default function ResultsPage() {
 
   const { data, isLoading, error } = useFlightSearch(state);
 
-  if (!state) {
-    return (
-      <div className="p-6">
-        <p className="mb-4 text-red-500">No search parameters provided.</p>
-        <Link to="/" className="text-blue-600 underline">
-          Go back
-        </Link>
-      </div>
-    );
-  }
+  // if (!state) {
+  //   return (
+  //     <div className="p-6">
+  //       <p className="mb-4 text-red-500">No search parameters provided.</p>
+  //       <Link to="/" className="text-blue-600 underline">
+  //         Go back
+  //       </Link>
+  //     </div>
+  //   );
+  // }
 
   if (isLoading) return <p className="p-6">Loading…</p>;
   if (error)     return <p className="p-6 text-red-500">Error loading flights.</p>;
