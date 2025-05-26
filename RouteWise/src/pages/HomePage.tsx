@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import Layout from "../components/Layout";
+import AdvancedOptions from "../components/AdvancedOptions";
 import type { FlightParams } from "../hooks/useFlightSearch";
 
 export default function HomePage() {
@@ -9,7 +10,6 @@ export default function HomePage() {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const navigate = useNavigate();
 
-  /* simple fade-in animation for the destination sections */
   const destinationSections = [
     {
       city: "Paris",
@@ -88,100 +88,78 @@ export default function HomePage() {
             Find your perfect trip in one quick search.
           </p>
 
-          <form
-            onSubmit={handleSubmit}
-            className="flex w-full flex-wrap items-start gap-4"
-          >
-            {/* From / To */}
-            <input
-              name="from"
-              placeholder="From"
-              className="flex-1 min-w-[120px] rounded border bg-white px-3 py-2"
-            />
-            <input
-              name="to"
-              placeholder="To"
-              className="flex-1 min-w-[120px] rounded border bg-white px-3 py-2"
-            />
-
-            {/* Dates */}
-            <input
-              type="date"
-              name="departDate"
-              className="flex-1 min-w-[140px] rounded border bg-white px-3 py-2"
-            />
-            <input
-              type="date"
-              name="returnDate"
-              className="flex-1 min-w-[140px] rounded border bg-white px-3 py-2"
-            />
-
-            {/* Travellers */}
-            <input
-              type="number"
-              min={1}
-              name="travellers"
-              placeholder="Travellers"
-              className="flex-1 min-w-[100px] rounded border bg-white px-3 py-2"
-            />
-
-            {/* Advanced-options button */}
-            <button
-              type="button"
-              onClick={() => setShowAdvanced((p) => !p)}
-              aria-expanded={showAdvanced}
-              className="mt-2 rounded border bg-white px-3 py-2 text-sm text-[#021952] hover:bg-gray-100"
-            >
-              {showAdvanced ? "Hide Options" : "Advanced Options"}
-            </button>
-
-            {/* Submit */}
-            <button
-              type="submit"
-              className="flex-shrink-0 rounded bg-blue-600 px-6 py-2 font-semibold text-white hover:bg-blue-700"
-            >
-              Search
-            </button>
-
-            {/* ── Collapsible panel ── */}
-            <div
-              className={`w-full overflow-hidden transition-[max-height] duration-500 ease-in-out ${
-                showAdvanced ? "max-h-96 mt-4" : "max-h-0"
-              }`}
-            >
-              <div className="flex flex-wrap gap-4">
-                <input
-                  type="number"
-                  name="maxPrice"
-                  placeholder="Max Price ($)"
-                  className="flex-1 min-w-[120px] rounded border bg-white px-3 py-2"
-                />
-                <select
-                  name="cabin"
-                  className="flex-1 min-w-[140px] rounded border bg-white px-3 py-2"
-                >
-                  <option value="">Cabin Class</option>
-                  <option>Economy</option>
-                  <option>Premium Economy</option>
-                  <option>Business</option>
-                  <option>First</option>
-                </select>
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    name="directOnly"
-                    className="h-5 w-5"
-                  />
-                  <span className="text-sm">Non-stop only</span>
-                </label>
-              </div>
+          <form onSubmit={handleSubmit} className="w-full space-y-6">
+            {/* ── Input Row ── */}
+            <div className="flex flex-wrap items-start gap-4">
+              <input
+                name="from"
+                placeholder="From"
+                className="flex-1 min-w-[120px] rounded border bg-white px-3 py-2"
+              />
+              <input
+                name="to"
+                placeholder="To"
+                className="flex-1 min-w-[120px] rounded border bg-white px-3 py-2"
+              />
+              <input
+                type="date"
+                name="departDate"
+                className="flex-1 min-w-[140px] rounded border bg-white px-3 py-2"
+              />
+              <input
+                type="date"
+                name="returnDate"
+                className="flex-1 min-w-[140px] rounded border bg-white px-3 py-2"
+              />
+              <input
+                type="number"
+                min={1}
+                name="travellers"
+                placeholder="Travellers"
+                className="flex-1 min-w-[100px] rounded border bg-white px-3 py-2"
+              />
+              <button
+                type="submit"
+                className="flex-shrink-0 rounded bg-blue-600 px-6 py-2 font-semibold text-white hover:bg-blue-700"
+              >
+                Search
+              </button>
             </div>
+
+            <AdvancedOptions
+              show={showAdvanced}
+              onToggle={() => setShowAdvanced((p) => !p)}
+            />
           </form>
         </Header>
       }
     >
+      {/* Split-overlap image section */}
+      <div className="relative z-10 flex justify-center -mt-28 mb-10 px-4">
+        <div
+          className="
+      overflow-hidden rounded-xl shadow-lg
+      w-full max-w-7xl
+      bg-gradient-to-br from-orange-400 to-pink-500
+    "
+          style={{
+            maskImage:
+              "radial-gradient(circle at center, black 80%, transparent 100%)",
+            WebkitMaskImage:
+              "radial-gradient(circle at center, black 80%, transparent 100%)",
+          }}
+        >
+          <img
+            src="/assets/water.png"
+            alt="Promo image"
+            className="w-full h-auto object-cover"
+            style={{ aspectRatio: "3 / 1" }}
+          />
+        </div>
+      </div>
+
       {/* ——— Home body (destinations etc.) ——— */}
-      <section className="pt-20 sm:pt-20 md:pt-28 lg:pt-32">
+      <section className="pt-10 sm:pt-10 md:pt-15 lg:pt-20">
         <h2 className="mb-8 text-center text-3xl font-bold">
           Popular Destinations
         </h2>

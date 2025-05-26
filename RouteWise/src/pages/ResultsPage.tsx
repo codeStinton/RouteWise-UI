@@ -1,8 +1,21 @@
-import { useLocation, Link } from "react-router-dom";
-import Header from "../components/Header";
-import Layout from "../components/Layout";
-import { useFlightSearch } from "../hooks/useFlightSearch";
-import type { FlightParams } from "../hooks/useFlightSearch";
+import { useLocation, Link } from 'react-router-dom';
+import Header from '../components/Header';
+import Layout from '../components/Layout';
+import FlightCard from '../components/FlightCard';
+import { useFlightSearch } from '../hooks/useFlightSearch';
+import type { FlightParams } from '../hooks/useFlightSearch';
+
+function formatDate(date: string) {
+  try {
+    return new Intl.DateTimeFormat('en-GB', {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+    }).format(new Date(date));
+  } catch {
+    return date;
+  }
+}
 
 export default function ResultsPage() {
   const { state } = useLocation() as { state: FlightParams | null };
@@ -14,7 +27,13 @@ export default function ResultsPage() {
     <Layout
       hero={
         <Header>
-          <p className="text-lg font-medium text-white">Search results</p>
+          {state && (
+            <p className="text-lg font-medium text-white text-center">
+              {state.from} – {state.to} · {state.travellers}{' '}
+              {state.travellers === 1 ? 'Adult' : 'Adults'}{' '}
+              {formatDate(state.departDate)} · {formatDate(state.returnDate)}
+            </p>
+          )}
         </Header>
       }
     >
@@ -31,18 +50,21 @@ export default function ResultsPage() {
       {error && <p className="p-6 text-red-500">Error loading flights.</p>}
 
       {data && (
-        <div className="mx-auto max-w-3xl p-6">
-          <h1 className="mb-4 text-2xl font-bold">Results</h1>
+        <div className="mx-auto max-w-3xl p-6 space-y-4">
           {data.length === 0 && <p>No flights found.</p>}
-
-          <div className="space-y-4">
-            {data.map((f) => (
-              <div key={f.id} className="rounded border p-4 shadow">
-                {f.summary}
-              </div>
-            ))}
-          </div>
-
+          {data.map((f) => (
+            <FlightCard
+              key={f.id}
+              airline={f.airline || 'Unknown Airline'}
+              departTime={f.departTime}
+              arriveTime={f.arriveTime}
+              departCode={f.departCode}
+              arriveCode={f.arriveCode}
+              duration={f.duration}
+              stops={f.stops}
+              price={`£${f.price}`}
+            />
+          ))}
           <Link to="/" className="mt-6 inline-block text-blue-600 underline">
             New search
           </Link>

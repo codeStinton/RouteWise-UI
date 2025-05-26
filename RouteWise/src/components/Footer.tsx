@@ -7,7 +7,7 @@ export default function Footer() {
         </div>
 
         <p className="text-sm">
-          © 2024 <span className="font-medium">RouteWise</span>. All rights
+          © 2025 <span className="font-medium">RouteWise</span>. All rights
           reserved.
         </p>
 

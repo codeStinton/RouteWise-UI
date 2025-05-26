@@ -3,9 +3,14 @@ import type { Flight } from '../types/flight';
 import { mockFlights } from '../mocks/mockFlights';
 
 export interface FlightParams {
-  origin: string;
-  destination: string;
+  from: string;
+  to: string;
+  departDate: string;
+  returnDate: string;
+  travellers: number;
+  directOnly: boolean;
 }
+
 
 export function useFlightSearch(params: FlightParams) {
   return useQuery<Flight[]>({

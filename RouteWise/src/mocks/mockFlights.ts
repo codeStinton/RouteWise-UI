@@ -2,15 +2,25 @@ import type { Flight } from '../types/flight';
 
 export const mockFlights: Flight[] = [
   {
-    id: 'LHR-JFK-001',
-    summary: 'London → New York • £420 • non-stop • 7h 45m',
+    id: '1',
+    airline: 'Ryanair',
+    departTime: '11:00',
+    arriveTime: '12:00',
+    departCode: 'CWL',
+    arriveCode: 'DUB',
+    duration: '1h',
+    stops: 'Direct',
+    price: 260,
   },
   {
-    id: 'LHR-JFK-002',
-    summary: 'London → New York • £390 • 1 stop • 10h 15m',
-  },
-  {
-    id: 'LHR-JFK-003',
-    summary: 'London → New York • £465 • non-stop • 7h 35m',
+    id: '2',
+    airline: 'Aer Lingus',
+    departTime: '22:10',
+    arriveTime: '23:20',
+    departCode: 'CWL',
+    arriveCode: 'DUB',
+    duration: '1h 10',
+    stops: 'Direct',
+    price: 422,
   },
 ];
