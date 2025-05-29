@@ -11,8 +11,6 @@ export default function Header({ children, className = '' }: HeaderProps) {
     <header className={`bg-[#021952] ${className}`}>
       <div className="container mx-auto px-6 pt-8 pb-12 flex flex-col gap-4">
         <Link to="/" className="flex items-center gap-2 text-white">
-          <span className="text-3xl">✈️</span>
-          <h1 className="text-2xl font-bold">RouteWise</h1>
         </Link>
 
         {children}
