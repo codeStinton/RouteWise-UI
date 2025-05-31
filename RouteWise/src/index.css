@@ -84,21 +84,17 @@
     padding-right: 1rem;
     padding-top: 1rem;
     padding-bottom: 1rem;
-    background-color: rgb(15 23 42 / 0.5);
     backdrop-filter: blur(4px);
     border-radius: 0.75rem;
     border: 1px solid rgb(51 65 85 / 0.5);
-    color: white;
+    color: #000000;
+    background-color: white;
     transition: all 0.2s;
     cursor: pointer;
-}
+  }
 
 .react-datepicker__input-container input::placeholder {
     color: #94a3b8;
-}
-
-.react-datepicker__input-container input:hover {
-    background-color: rgb(15 23 42 / 0.7);
 }
 
 .react-datepicker__input-container input:focus {
@@ -136,3 +132,4 @@
 .react-datepicker__triangle {
     display: none;
 }
+

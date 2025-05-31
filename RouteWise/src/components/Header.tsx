@@ -8,7 +8,7 @@ interface HeaderProps {
 
 export default function Header({ children, className = '' }: HeaderProps) {
   return (
-    <header className={`bg-[#021952] ${className}`}>
+    <header className={`bg-gradient-to-b from-blue-700 to-gray-50 ${className}`}>
       <div className="container mx-auto px-6 pt-8 pb-12 flex flex-col gap-4">
         <Link to="/" className="flex items-center gap-2 text-white">
         </Link>

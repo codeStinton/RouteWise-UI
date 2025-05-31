@@ -1,21 +1,26 @@
 import { useState } from "react";
 import {
-  ChevronDown,
   Plus,
   X,
   Calendar,
   Clock,
   MapPin,
-  Plane,
-  Search,
+  Plane
 } from "lucide-react";
+
+import ReactDatePicker, { type DatePickerProps } from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+// eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+const DatePicker = ReactDatePicker as unknown as React.FC<DatePickerProps>;
 
 interface AdvancedOptionsProps {
   show: boolean;
   onToggle: () => void;
 }
 
-export default function AdvancedOptions({ show, onToggle }: AdvancedOptionsProps) {
+export default function AdvancedOptions({
+  show,
+}: AdvancedOptionsProps) {
   const [tripType, setTripType] = useState("roundtrip");
   const [multiCityLegs, setMultiCityLegs] = useState([
     { id: 1, from: "", to: "", date: "" },
@@ -80,16 +85,6 @@ export default function AdvancedOptions({ show, onToggle }: AdvancedOptionsProps
 
   return (
     <div className="w-full">
-      <button
-        type="button"
-        onClick={onToggle}
-        className="flex items-center gap-3 text-white hover:text-blue-200 transition-colors font-medium text-lg"
-      >
-        <ChevronDown size={24} className={`transition-transform ${show ? 'rotate-180' : ''}`} />
-        <Search size={20} />
-        Advanced Options
-      </button>
-
       {show && (
         <div className="mt-6 rounded-xl p-6 space-y-6">
           {/* Trip Type Selection */}
@@ -189,7 +184,7 @@ export default function AdvancedOptions({ show, onToggle }: AdvancedOptionsProps
             <select
               value={dateSearchType}
               onChange={(e) => setDateSearchType(e.target.value)}
-              className="w-full rounded-lg border-0 bg-white/90 backdrop-blur-sm px-4 py-3 text-gray-900 shadow-lg focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
+              className="w-full rounded-lg border-0 bg-white backdrop-blur-sm px-4 py-3 text-gray-900 shadow-lg focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
             >
               <option value="specific">Specific Dates</option>
               <option value="flexible-month">Flexible by Month</option>
@@ -201,7 +196,7 @@ export default function AdvancedOptions({ show, onToggle }: AdvancedOptionsProps
               <div className="flex gap-3">
                 <select
                   name="flexibleMonth"
-                  className="flex-1 rounded-lg border-0 bg-white/90 backdrop-blur-sm px-4 py-3 text-gray-900 shadow-lg focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
+                  className="flex-1 rounded-lg border-0 bg-white backdrop-blur-sm px-4 py-3 text-gray-900 shadow-lg focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
                 >
                   <option value="">Select Month</option>
                   {[
@@ -268,12 +263,19 @@ export default function AdvancedOptions({ show, onToggle }: AdvancedOptionsProps
                   max="90"
                   className="flex-1 rounded-lg border-0 bg-white/90 backdrop-blur-sm px-4 py-3 text-gray-900 placeholder-gray-500 shadow-lg focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
                 />
-                <input
-                  type="date"
-                  name="earliestDeparture"
-                  placeholder="Earliest departure"
-                  className="flex-1 rounded-lg border-0 bg-white/90 backdrop-blur-sm px-4 py-3 text-gray-900 shadow-lg focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
-                />
+                <div className="flex-1 relative group" style={{ zIndex: 40 }}>
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
+                    <Calendar className="h-5 w-5 text-emerald-400" />
+                  </div>
+                  <DatePicker
+                    placeholderText="Earliest departure"
+                    dateFormat="yyyy-MM-dd"
+                    className="w-full pl-12 pr-4 py-3 bg-white/90 backdrop-blur-sm rounded-lg border-0 text-gray-900 placeholder-gray-500 shadow-lg focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all cursor-pointer"
+                    wrapperClassName="w-full"
+                    popperClassName="!z-50"
+                    popperPlacement="bottom-start"
+                  />
+                </div>
               </div>
             )}
           </div>
@@ -295,7 +297,7 @@ export default function AdvancedOptions({ show, onToggle }: AdvancedOptionsProps
                     maxStops: e.target.value,
                   }))
                 }
-                className="rounded-lg border-0 bg-white/90 backdrop-blur-sm px-4 py-3 text-gray-900 shadow-lg focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
+                className="rounded-lg border-0 bg-white backdrop-blur-sm px-4 py-3 text-gray-900 shadow-lg focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
               >
                 <option value="non-stop">Non-stop only</option>
                 <option value="1">Max 1 stop</option>
@@ -314,7 +316,7 @@ export default function AdvancedOptions({ show, onToggle }: AdvancedOptionsProps
                     minLayoverTime: e.target.value,
                   }))
                 }
-                className="rounded-lg border-0 bg-white/90 backdrop-blur-sm px-4 py-3 text-gray-900 placeholder-gray-500 shadow-lg focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
+                className="rounded-lg border-0 bg-white backdrop-blur-sm px-4 py-3 text-gray-900 placeholder-gray-500 shadow-lg focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
               />
 
               <input
@@ -335,7 +337,7 @@ export default function AdvancedOptions({ show, onToggle }: AdvancedOptionsProps
             <div className="space-y-2">
               <label className="text-white text-sm flex items-center gap-2">
                 <MapPin size={16} />
-                Preferred Layover Cities
+                Layover Cities
               </label>
               <div className="flex gap-2">
                 <input
@@ -360,7 +362,7 @@ export default function AdvancedOptions({ show, onToggle }: AdvancedOptionsProps
                 {layoverPrefs.preferredLayoverCities.map((city) => (
                   <span
                     key={city}
-                    className="flex items-center gap-1 px-3 py-1 bg-blue-500/20 text-white rounded-full text-sm"
+                    className="flex items-center gap-1 px-3 py-1 bg-blue-500/70 text-white rounded-full text-sm"
                   >
                     {city}
                     <button
@@ -373,25 +375,6 @@ export default function AdvancedOptions({ show, onToggle }: AdvancedOptionsProps
                   </span>
                 ))}
               </div>
-            </div>
-          </div>
-
-          {/* Additional Options */}
-          <div className="space-y-3">
-            <label className="text-white font-medium">Additional Filters</label>
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 text-white cursor-pointer">
-                <input type="checkbox" name="directOnly" className="w-4 h-4" />
-                Direct flights only
-              </label>
-              <label className="flex items-center gap-2 text-white cursor-pointer">
-                <input type="checkbox" name="refundable" className="w-4 h-4" />
-                Refundable tickets only
-              </label>
-              <label className="flex items-center gap-2 text-white cursor-pointer">
-                <input type="checkbox" name="sameAirline" className="w-4 h-4" />
-                Same airline for all segments
-              </label>
             </div>
           </div>
         </div>

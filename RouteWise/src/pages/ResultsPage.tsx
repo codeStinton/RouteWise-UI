@@ -1,6 +1,14 @@
 import { useState } from "react";
 import { useLocation, Link } from "react-router-dom";
-import { Filter, Clock, Plane, MapPin, Star } from "lucide-react";
+import {
+  Filter,
+  Plane,
+  MapPin,
+  Star,
+  ArrowRight,
+  Users,
+  Calendar,
+} from "lucide-react";
 import Header from "../components/Header";
 import Layout from "../components/Layout";
 import FlightCard from "../components/FlightCard";
@@ -40,8 +48,6 @@ export default function ResultsPage() {
   });
 
   const [sortBy, setSortBy] = useState("price");
-  const [showFilters, setShowFilters] = useState(false);
-
   const handleFilterChange = (type: keyof FilterState, value: any) => {
     setFilters((prev) => ({
       ...prev,
@@ -52,43 +58,66 @@ export default function ResultsPage() {
   return (
     <Layout
       hero={
-        <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 relative overflow-hidden">
-          <div className="absolute inset-0 bg-black/20"></div>
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/30"></div>
-          <Header>
-            {state && (
-              <div className="relative z-10 text-center space-y-3 py-8">
-                <div className="flex items-center justify-center gap-3 text-white/90 mb-2">
-                  <MapPin className="w-5 h-5" />
-                  <span className="text-lg font-medium">
-                    Flight Search Results
-                  </span>
-                </div>
-                <div className="flex flex-wrap items-center justify-center gap-4 text-white">
-                  <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2">
-                    <Plane className="w-4 h-4" />
-                    <span className="font-semibold">
-                      {state.from} → {state.to}
-                    </span>
+        <Header>
+          {state && (
+            <>
+              <div className="absolute top-4 left-6 p-5">
+                <Link
+                  to="/"
+                  className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+                >
+                  <div className="p-2 bg-white/10 backdrop-blur-sm rounded-lg">
+                    <Plane className="text-white" size={28} />
                   </div>
-                  <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2">
-                    <span>
+                  <h1 className="text-xl font-bold text-white">RouteWise</h1>
+                </Link>
+              </div>
+
+              <div className="relative z-10 text-center space-y-4 pt-24">
+                {/* Search Parameters */}
+                <div className="flex flex-wrap items-center justify-center gap-3 text-white">
+                  {/* Route */}
+                  <div className="flex items-center gap-2.5 bg-gradient-to-r from-blue-500/80 to-blue-600/30 backdrop-blur-md border border-white/20 rounded-full px-5 py-2.5 shadow-lg hover:shadow-xl transition-all">
+                    <div className="bg-white/20 rounded-full p-1">
+                      <Plane className="w-4 h-4" />
+                    </div>
+                    <span className="font-semibold text-sm">{state.from}</span>
+                    <ArrowRight className="w-4 h-4 opacity-70" />
+                    <span className="font-semibold text-sm">{state.to}</span>
+                  </div>
+
+                  {/* Travelers */}
+                  <div className="flex items-center gap-2.5 bg-gradient-to-r from-blue-500/80 to-blue-600/30 backdrop-blur-md border border-white/20 rounded-full px-5 py-2.5 shadow-lg hover:shadow-xl transition-all">
+                    <div className="bg-white/20 rounded-full p-1">
+                      <Users className="w-4 h-4" />
+                    </div>
+                    <span className="font-medium text-sm">
                       {state.travellers}{" "}
                       {state.travellers === 1 ? "Adult" : "Adults"}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2">
-                    <Clock className="w-4 h-4" />
-                    <span>
-                      {formatDate(state.departDate)} -{" "}
+
+                  {/* Dates */}
+                  <div className="flex items-center gap-2.5 bg-gradient-to-r from-blue-500/80 to-blue-600/30 backdrop-blur-md border border-white/20 rounded-full px-5 py-2.5 shadow-lg hover:shadow-xl transition-all">
+                    <div className="bg-white/20 rounded-full p-1">
+                      <Calendar className="w-4 h-4" />
+                    </div>
+                    <span className="font-medium text-sm">
+                      {formatDate(state.departDate)}
+                    </span>
+                    <ArrowRight className="w-4 h-4 opacity-70" />
+                    <span className="font-medium text-sm">
                       {formatDate(state.returnDate)}
                     </span>
                   </div>
                 </div>
+                <div className="pt-4">
+                  <div className="mx-auto w-24 h-0.5 bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
+                </div>
               </div>
-            )}
-          </Header>
-        </div>
+            </>
+          )}
+        </Header>
       }
     >
       {!state && (
@@ -158,14 +187,6 @@ export default function ResultsPage() {
             </div>
 
             <div className="flex items-center gap-3">
-              <button
-                onClick={() => setShowFilters(!showFilters)}
-                className="lg:hidden flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                <Filter className="w-4 h-4" />
-                Filters
-              </button>
-
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-600">Sort by:</span>
                 <select
@@ -184,160 +205,154 @@ export default function ResultsPage() {
 
           <div className="flex gap-8">
             {/* Filters Sidebar */}
-            <div
-              className={`w-80 flex-shrink-0 transition-all duration-300 ${
-                showFilters ? "block" : "hidden lg:block"
-              }`}
-            >
-              <div className="sticky top-6 space-y-6">
-                {/* Enhanced Filter Panel */}
-                <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-100">
-                    <div className="flex items-center gap-2">
-                      <Filter className="w-5 h-5 text-blue-600" />
-                      <h3 className="font-semibold text-lg text-gray-900">
-                        Filters
-                      </h3>
+            <div className="sticky top-6 space-y-6">
+              {/* Enhanced Filter Panel */}
+              <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-100">
+                  <div className="flex items-center gap-2">
+                    <Filter className="w-5 h-5 text-blue-600" />
+                    <h3 className="font-semibold text-lg text-gray-900">
+                      Filters
+                    </h3>
+                  </div>
+                </div>
+
+                <div className="p-6 space-y-6">
+                  {/* Price Range */}
+                  <div>
+                    <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
+                      💰 Price Range
+                    </h4>
+                    <div className="space-y-3">
+                      <input
+                        type="range"
+                        min="0"
+                        max="1000"
+                        value={filters.priceRange[1]}
+                        onChange={(e) =>
+                          handleFilterChange("priceRange", [
+                            0,
+                            parseInt(e.target.value),
+                          ])
+                        }
+                        className="w-full h-2 bg-gradient-to-r from-blue-200 to-blue-500 rounded-lg appearance-none cursor-pointer slider"
+                      />
+                      <div className="flex justify-between text-sm font-medium">
+                        <span className="text-gray-600">£0</span>
+                        <span className="text-blue-600">
+                          £{filters.priceRange[1]}+
+                        </span>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="p-6 space-y-6">
-                    {/* Price Range */}
-                    <div>
-                      <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
-                        💰 Price Range
-                      </h4>
-                      <div className="space-y-3">
-                        <input
-                          type="range"
-                          min="0"
-                          max="1000"
-                          value={filters.priceRange[1]}
-                          onChange={(e) =>
-                            handleFilterChange("priceRange", [
-                              0,
-                              parseInt(e.target.value),
-                            ])
-                          }
-                          className="w-full h-2 bg-gradient-to-r from-blue-200 to-blue-500 rounded-lg appearance-none cursor-pointer slider"
-                        />
-                        <div className="flex justify-between text-sm font-medium">
-                          <span className="text-gray-600">£0</span>
-                          <span className="text-blue-600">
-                            £{filters.priceRange[1]}+
+                  {/* Stops */}
+                  <div>
+                    <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
+                      ✈️ Stops
+                    </h4>
+                    <div className="space-y-3">
+                      {["Direct", "1 stop", "2+ stops"].map((stop) => (
+                        <label
+                          key={stop}
+                          className="flex items-center group cursor-pointer"
+                        >
+                          <input
+                            type="checkbox"
+                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                            checked={filters.stops.includes(stop)}
+                            onChange={(e) => {
+                              const newStops = e.target.checked
+                                ? [...filters.stops, stop]
+                                : filters.stops.filter((s) => s !== stop);
+                              handleFilterChange("stops", newStops);
+                            }}
+                          />
+                          <span className="ml-3 text-sm text-gray-700 group-hover:text-gray-900">
+                            {stop}
                           </span>
-                        </div>
-                      </div>
+                        </label>
+                      ))}
                     </div>
+                  </div>
 
-                    {/* Stops */}
-                    <div>
-                      <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
-                        ✈️ Stops
-                      </h4>
-                      <div className="space-y-3">
-                        {["Direct", "1 stop", "2+ stops"].map((stop) => (
+                  {/* Airlines */}
+                  <div>
+                    <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
+                      🏢 Airlines
+                    </h4>
+                    <div className="space-y-3">
+                      {["Ryanair", "Aer Lingus", "British Airways"].map(
+                        (airline) => (
                           <label
-                            key={stop}
+                            key={airline}
                             className="flex items-center group cursor-pointer"
                           >
                             <input
                               type="checkbox"
                               className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                              checked={filters.stops.includes(stop)}
+                              checked={filters.airlines.includes(airline)}
                               onChange={(e) => {
-                                const newStops = e.target.checked
-                                  ? [...filters.stops, stop]
-                                  : filters.stops.filter((s) => s !== stop);
-                                handleFilterChange("stops", newStops);
+                                const newAirlines = e.target.checked
+                                  ? [...filters.airlines, airline]
+                                  : filters.airlines.filter(
+                                      (a) => a !== airline
+                                    );
+                                handleFilterChange("airlines", newAirlines);
                               }}
                             />
                             <span className="ml-3 text-sm text-gray-700 group-hover:text-gray-900">
-                              {stop}
+                              {airline}
                             </span>
                           </label>
-                        ))}
-                      </div>
+                        )
+                      )}
                     </div>
+                  </div>
 
-                    {/* Airlines */}
-                    <div>
-                      <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
-                        🏢 Airlines
-                      </h4>
-                      <div className="space-y-3">
-                        {["Ryanair", "Aer Lingus", "British Airways"].map(
-                          (airline) => (
-                            <label
-                              key={airline}
-                              className="flex items-center group cursor-pointer"
-                            >
-                              <input
-                                type="checkbox"
-                                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                                checked={filters.airlines.includes(airline)}
-                                onChange={(e) => {
-                                  const newAirlines = e.target.checked
-                                    ? [...filters.airlines, airline]
-                                    : filters.airlines.filter(
-                                        (a) => a !== airline
-                                      );
-                                  handleFilterChange("airlines", newAirlines);
-                                }}
-                              />
-                              <span className="ml-3 text-sm text-gray-700 group-hover:text-gray-900">
-                                {airline}
-                              </span>
-                            </label>
-                          )
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Departure Time */}
-                    <div>
-                      <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
-                        🕐 Departure Time
-                      </h4>
-                      <div className="grid grid-cols-2 gap-3">
-                        {[
-                          {
-                            label: "Early Morning",
-                            time: "6AM - 12PM",
-                            icon: "🌅",
-                          },
-                          {
-                            label: "Afternoon",
-                            time: "12PM - 6PM",
-                            icon: "☀️",
-                          },
-                          { label: "Evening", time: "6PM - 12AM", icon: "🌆" },
-                          { label: "Night", time: "12AM - 6AM", icon: "🌙" },
-                        ].map((period) => (
-                          <button
-                            key={period.label}
-                            onClick={() => {
-                              const newTimes = filters.departureTime.includes(
-                                period.label
-                              )
-                                ? filters.departureTime.filter(
-                                    (t) => t !== period.label
-                                  )
-                                : [...filters.departureTime, period.label];
-                              handleFilterChange("departureTime", newTimes);
-                            }}
-                            className={`p-3 border-2 rounded-lg text-xs transition-all ${
-                              filters.departureTime.includes(period.label)
-                                ? "border-blue-500 bg-blue-50 text-blue-700"
-                                : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                            }`}
-                          >
-                            <div className="text-lg mb-1">{period.icon}</div>
-                            <div className="font-medium">{period.label}</div>
-                            <div className="text-gray-500">{period.time}</div>
-                          </button>
-                        ))}
-                      </div>
+                  {/* Departure Time */}
+                  <div>
+                    <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
+                      🕐 Departure Time
+                    </h4>
+                    <div className="grid grid-cols-2 gap-3">
+                      {[
+                        {
+                          label: "Early Morning",
+                          time: "6AM - 12PM",
+                          icon: "🌅",
+                        },
+                        {
+                          label: "Afternoon",
+                          time: "12PM - 6PM",
+                          icon: "☀️",
+                        },
+                        { label: "Evening", time: "6PM - 12AM", icon: "🌆" },
+                        { label: "Night", time: "12AM - 6AM", icon: "🌙" },
+                      ].map((period) => (
+                        <button
+                          key={period.label}
+                          onClick={() => {
+                            const newTimes = filters.departureTime.includes(
+                              period.label
+                            )
+                              ? filters.departureTime.filter(
+                                  (t) => t !== period.label
+                                )
+                              : [...filters.departureTime, period.label];
+                            handleFilterChange("departureTime", newTimes);
+                          }}
+                          className={`p-3 border-2 rounded-lg text-xs transition-all ${
+                            filters.departureTime.includes(period.label)
+                              ? "border-blue-500 bg-blue-50 text-blue-700"
+                              : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                          }`}
+                        >
+                          <div className="text-lg mb-1">{period.icon}</div>
+                          <div className="font-medium">{period.label}</div>
+                          <div className="text-gray-500">{period.time}</div>
+                        </button>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -429,11 +444,10 @@ export default function ResultsPage() {
 
                     {/* Trip Summary */}
                     {state && (
-                      <div className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 rounded-xl shadow-lg border border-blue-100 overflow-hidden">
-                        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4">
-                          <h3 className="font-semibold text-lg text-white flex items-center gap-2">
-                            <Plane className="w-5 h-5" />
-                            Trip Summary
+                      <div className="bg-white via-indigo-50 to-purple-50 rounded-xl shadow-lg border border-blue-100 overflow-hidden">
+                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4">
+                          <h3 className="font-semibold text-lg text-black flex items-center gap-2">
+                            ✈️ Trip Summary
                           </h3>
                         </div>
 

@@ -11,10 +11,11 @@ import {
 } from "lucide-react";
 import Layout from "../components/Layout";
 import Header from "../components/Header";
-import ImprovedSearchForm from "../components/ImprovedSearchForm";
+import SearchForm from "../components/SearchForm";
 
 export default function HomePage() {
 
+  // TBA refactor
   const destinationSections = [
     {
       city: "Paris",
@@ -89,7 +90,6 @@ export default function HomePage() {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    // Trigger load animations
     setTimeout(() => setIsLoaded(true), 100);
 
     const observers: IntersectionObserver[] = [];
@@ -115,13 +115,6 @@ export default function HomePage() {
       hero={
         <Header>
           <div className="relative overflow-hidden">
-            {/* Background Pattern */}
-            <div className="absolute inset-0 opacity-10">
-              <div className="absolute top-20 left-20 w-32 h-32 bg-white rounded-full blur-3xl"></div>
-              <div className="absolute top-40 right-32 w-24 h-24 bg-blue-300 rounded-full blur-2xl"></div>
-              <div className="absolute bottom-20 left-1/3 w-40 h-40 bg-indigo-300 rounded-full blur-3xl"></div>
-            </div>
-
             <div className="relative container mx-auto px-6 py-16">
               {/* Logo and Title */}
               <div
@@ -143,7 +136,16 @@ export default function HomePage() {
                   Find your perfect trip in one quick search.
                 </p>
               </div>
-                <ImprovedSearchForm></ImprovedSearchForm>
+              {/* Search Form with Fade Animation */}
+              <div
+                className={`transition-all duration-1000 delay-300 ${
+                  isLoaded
+                    ? "translate-y-0 opacity-100"
+                    : "translate-y-8 opacity-0"
+                }`}
+              >
+                <SearchForm />
+              </div>
             </div>
           </div>
         </Header>
@@ -255,8 +257,6 @@ export default function HomePage() {
                         })}
                       </div>
                     </div>
-
-                    {/* Enhanced CTA Button */}
                     <button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-8 py-4 rounded-2xl font-bold text-lg flex items-center gap-3 transition-all duration-300 group-hover:translate-x-2 shadow-lg hover:shadow-xl">
                       Search Flights
                       <ArrowRight className="w-6 h-6" />
