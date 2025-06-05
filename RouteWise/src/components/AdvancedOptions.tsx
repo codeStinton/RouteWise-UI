@@ -5,82 +5,126 @@ import {
   Calendar,
   Clock,
   MapPin,
-  Plane
+  Plane,
+  DollarSign,
 } from "lucide-react";
-
 import ReactDatePicker, { type DatePickerProps } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-// eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+import type { SearchFormData } from "./SearchForm";
+
 const DatePicker = ReactDatePicker as unknown as React.FC<DatePickerProps>;
 
 interface AdvancedOptionsProps {
   show: boolean;
   onToggle: () => void;
+  tripType: string;
+  onTripTypeChange: (type: "one-way" | "roundtrip" | "multi-city") => void;
+  searchParams: SearchFormData;
+  onSearchParamsChange: (params: SearchFormData) => void;
 }
 
 export default function AdvancedOptions({
   show,
+  tripType,
+  onTripTypeChange,
+  searchParams,
+  onSearchParamsChange,
 }: AdvancedOptionsProps) {
-  const [tripType, setTripType] = useState("roundtrip");
-  const [multiCityLegs, setMultiCityLegs] = useState([
-    { id: 1, from: "", to: "", date: "" },
-    { id: 2, from: "", to: "", date: "" },
-  ]);
-  const [dateSearchType, setDateSearchType] = useState("specific");
-  const [selectedDaysOfWeek, setSelectedDaysOfWeek] = useState<string[]>([]);
-  const [layoverPrefs, setLayoverPrefs] = useState({
-    maxStops: "any",
-    minLayoverTime: "",
-    maxLayoverTime: "",
-    preferredLayoverCities: [] as string[],
-  });
   const [newLayoverCity, setNewLayoverCity] = useState("");
 
-  const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const months = [
+    { value: "1", label: "January" },
+    { value: "2", label: "February" },
+    { value: "3", label: "March" },
+    { value: "4", label: "April" },
+    { value: "5", label: "May" },
+    { value: "6", label: "June" },
+    { value: "7", label: "July" },
+    { value: "8", label: "August" },
+    { value: "9", label: "September" },
+    { value: "10", label: "October" },
+    { value: "11", label: "November" },
+    { value: "12", label: "December" },
+  ];
+
+  const handleFieldChange = (field: keyof SearchFormData, value: any) => {
+    onSearchParamsChange({
+      ...searchParams,
+      [field]: value,
+    });
+  };
 
   const addMultiCityLeg = () => {
-    const newId = Math.max(...multiCityLegs.map((leg) => leg.id)) + 1;
-    setMultiCityLegs([
-      ...multiCityLegs,
+    const currentLegs = searchParams.multiCityLegs || [];
+    const newId = Math.max(...currentLegs.map((leg) => leg.id), 0) + 1;
+    handleFieldChange("multiCityLegs", [
+      ...currentLegs,
       { id: newId, from: "", to: "", date: "" },
     ]);
   };
 
   const removeMultiCityLeg = (id: number) => {
-    if (multiCityLegs.length > 2) {
-      setMultiCityLegs(multiCityLegs.filter((leg) => leg.id !== id));
+    const currentLegs = searchParams.multiCityLegs || [];
+    if (currentLegs.length > 2) {
+      handleFieldChange(
+        "multiCityLegs",
+        currentLegs.filter((leg) => leg.id !== id)
+      );
     }
   };
 
-  const toggleDayOfWeek = (day: string) => {
-    setSelectedDaysOfWeek((prev) =>
-      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
+  const updateMultiCityLeg = (
+    id: number,
+    field: "from" | "to" | "date",
+    value: string
+  ) => {
+    const currentLegs = searchParams.multiCityLegs || [];
+    handleFieldChange(
+      "multiCityLegs",
+      currentLegs.map((leg) =>
+        leg.id === id ? { ...leg, [field]: value } : leg
+      )
+    );
+  };
+
+  const toggleDayOfWeek = (dayType: "departure" | "return", day: string) => {
+    const field =
+      dayType === "departure" ? "selectedDepartureDays" : "selectedReturnDays";
+    const currentDays = searchParams[field] || [];
+
+    handleFieldChange(
+      field,
+      currentDays.includes(day)
+        ? currentDays.filter((d) => d !== day)
+        : [...currentDays, day]
     );
   };
 
   const addLayoverCity = () => {
     if (
       newLayoverCity &&
-      !layoverPrefs.preferredLayoverCities.includes(newLayoverCity)
+      !searchParams.preferredLayoverCities.includes(newLayoverCity)
     ) {
-      setLayoverPrefs((prev) => ({
-        ...prev,
-        preferredLayoverCities: [
-          ...prev.preferredLayoverCities,
-          newLayoverCity,
-        ],
-      }));
+      handleFieldChange("preferredLayoverCities", [
+        ...searchParams.preferredLayoverCities,
+        newLayoverCity,
+      ]);
       setNewLayoverCity("");
     }
   };
 
   const removeLayoverCity = (city: string) => {
-    setLayoverPrefs((prev) => ({
-      ...prev,
-      preferredLayoverCities: prev.preferredLayoverCities.filter(
-        (c) => c !== city
-      ),
-    }));
+    handleFieldChange(
+      "preferredLayoverCities",
+      searchParams.preferredLayoverCities.filter((c) => c !== city)
+    );
+  };
+
+  const parseLayoverTime = (value: string): string => {
+    // Convert hour format (e.g., "2h" or "2") to minutes for the API
+    const match = value.match(/^(\d+)h?$/);
+    return match ? match[1] : "";
   };
 
   return (
@@ -104,7 +148,11 @@ export default function AdvancedOptions({
                     name="tripType"
                     value={type}
                     checked={tripType === type}
-                    onChange={(e) => setTripType(e.target.value)}
+                    onChange={(e) =>
+                      onTripTypeChange(
+                        e.target.value as "one-way" | "roundtrip" | "multi-city"
+                      )
+                    }
                     className="w-4 h-4 text-blue-600"
                   />
                   <span className="text-white capitalize">
@@ -119,41 +167,35 @@ export default function AdvancedOptions({
           {tripType === "multi-city" && (
             <div className="space-y-3">
               <label className="text-white font-medium">Flight Legs</label>
-              {multiCityLegs.map((leg, index) => (
+              {searchParams.multiCityLegs?.map((leg) => (
                 <div key={leg.id} className="flex items-center gap-2">
                   <input
                     type="text"
                     placeholder="From"
                     className="flex-1 rounded-lg border-0 bg-white/90 backdrop-blur-sm px-4 py-3 text-gray-900 placeholder-gray-500 shadow-lg focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
                     value={leg.from}
-                    onChange={(e) => {
-                      const updated = [...multiCityLegs];
-                      updated[index].from = e.target.value;
-                      setMultiCityLegs(updated);
-                    }}
+                    onChange={(e) =>
+                      updateMultiCityLeg(leg.id, "from", e.target.value)
+                    }
                   />
                   <input
                     type="text"
                     placeholder="To"
                     className="flex-1 rounded-lg border-0 bg-white/90 backdrop-blur-sm px-4 py-3 text-gray-900 placeholder-gray-500 shadow-lg focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
                     value={leg.to}
-                    onChange={(e) => {
-                      const updated = [...multiCityLegs];
-                      updated[index].to = e.target.value;
-                      setMultiCityLegs(updated);
-                    }}
+                    onChange={(e) =>
+                      updateMultiCityLeg(leg.id, "to", e.target.value)
+                    }
                   />
                   <input
                     type="date"
                     className="flex-1 rounded-lg border-0 bg-white/90 backdrop-blur-sm px-4 py-3 text-gray-900 shadow-lg focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
                     value={leg.date}
-                    onChange={(e) => {
-                      const updated = [...multiCityLegs];
-                      updated[index].date = e.target.value;
-                      setMultiCityLegs(updated);
-                    }}
+                    onChange={(e) =>
+                      updateMultiCityLeg(leg.id, "date", e.target.value)
+                    }
                   />
-                  {multiCityLegs.length > 2 && (
+                  {searchParams.multiCityLegs!.length > 2 && (
                     <button
                       type="button"
                       onClick={() => removeMultiCityLeg(leg.id)}
@@ -175,110 +217,148 @@ export default function AdvancedOptions({
             </div>
           )}
 
-          {/* Date Search Options */}
-          <div className="space-y-3">
-            <label className="text-white font-medium flex items-center gap-2">
-              <Calendar size={18} />
-              Date Search Type
-            </label>
-            <select
-              value={dateSearchType}
-              onChange={(e) => setDateSearchType(e.target.value)}
-              className="w-full rounded-lg border-0 bg-white backdrop-blur-sm px-4 py-3 text-gray-900 shadow-lg focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
-            >
-              <option value="specific">Specific Dates</option>
-              <option value="flexible-month">Flexible by Month</option>
-              <option value="flexible-days">Flexible by Days of Week</option>
-              <option value="duration">Fixed Duration</option>
-            </select>
+          {/* Date Search Options - Only show for non-multi-city trips */}
+          {tripType !== "multi-city" && (
+            <div className="space-y-3">
+              <label className="text-white font-medium flex items-center gap-2">
+                <Calendar size={18} />
+                Date Search Type
+              </label>
+              <select
+                value={searchParams.dateSearchType}
+                onChange={(e) =>
+                  handleFieldChange("dateSearchType", e.target.value)
+                }
+                className="w-full rounded-lg border-0 bg-white backdrop-blur-sm px-4 py-3 text-gray-900 shadow-lg focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
+              >
+                <option value="specific">Specific Dates</option>
+                <option value="flexible-month">Flexible by Month</option>
+                <option value="flexible-days">Flexible by Days of Week</option>
+                <option value="duration">Fixed Duration</option>
+              </select>
 
-            {dateSearchType === "flexible-month" && (
-              <div className="flex gap-3">
-                <select
-                  name="flexibleMonth"
-                  className="flex-1 rounded-lg border-0 bg-white backdrop-blur-sm px-4 py-3 text-gray-900 shadow-lg focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
-                >
-                  <option value="">Select Month</option>
-                  {[
-                    "January",
-                    "February",
-                    "March",
-                    "April",
-                    "May",
-                    "June",
-                    "July",
-                    "August",
-                    "September",
-                    "October",
-                    "November",
-                    "December",
-                  ].map((month) => (
-                    <option key={month} value={month}>
-                      {month}
-                    </option>
-                  ))}
-                </select>
-                <input
-                  type="number"
-                  name="flexibleYear"
-                  placeholder="Year"
-                  min="2024"
-                  max="2026"
-                  className="w-32 rounded-lg border-0 bg-white/90 backdrop-blur-sm px-4 py-3 text-gray-900 placeholder-gray-500 shadow-lg focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
-                />
-              </div>
-            )}
-
-            {dateSearchType === "flexible-days" && (
-              <div className="space-y-2">
-                <p className="text-sm text-white/80">
-                  Select departure and return days
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {daysOfWeek.map((day) => (
-                    <button
-                      key={day}
-                      type="button"
-                      onClick={() => toggleDayOfWeek(day)}
-                      className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                        selectedDaysOfWeek.includes(day)
-                          ? "bg-blue-500 text-white"
-                          : "bg-white/20 text-white hover:bg-white/30"
-                      }`}
-                    >
-                      {day}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {dateSearchType === "duration" && (
-              <div className="flex gap-3">
-                <input
-                  type="number"
-                  name="tripDuration"
-                  placeholder="Trip duration (days)"
-                  min="1"
-                  max="90"
-                  className="flex-1 rounded-lg border-0 bg-white/90 backdrop-blur-sm px-4 py-3 text-gray-900 placeholder-gray-500 shadow-lg focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
-                />
-                <div className="flex-1 relative group" style={{ zIndex: 40 }}>
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
-                    <Calendar className="h-5 w-5 text-emerald-400" />
-                  </div>
-                  <DatePicker
-                    placeholderText="Earliest departure"
-                    dateFormat="yyyy-MM-dd"
-                    className="w-full pl-12 pr-4 py-3 bg-white/90 backdrop-blur-sm rounded-lg border-0 text-gray-900 placeholder-gray-500 shadow-lg focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all cursor-pointer"
-                    wrapperClassName="w-full"
-                    popperClassName="!z-50"
-                    popperPlacement="bottom-start"
+              {searchParams.dateSearchType === "flexible-month" && (
+                <div className="flex gap-3">
+                  <select
+                    value={searchParams.flexibleMonth}
+                    onChange={(e) =>
+                      handleFieldChange("flexibleMonth", e.target.value)
+                    }
+                    className="flex-1 rounded-lg border-0 bg-white backdrop-blur-sm px-4 py-3 text-gray-900 shadow-lg focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
+                  >
+                    <option value="">Select Month</option>
+                    {months.map((month) => (
+                      <option key={month.value} value={month.value}>
+                        {month.label}
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    type="number"
+                    placeholder="Year"
+                    min="2024"
+                    max="2026"
+                    value={searchParams.flexibleYear}
+                    onChange={(e) =>
+                      handleFieldChange("flexibleYear", e.target.value)
+                    }
+                    className="w-32 rounded-lg border-0 bg-white/90 backdrop-blur-sm px-4 py-3 text-gray-900 placeholder-gray-500 shadow-lg focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
                   />
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+
+              {searchParams.dateSearchType === "flexible-days" && (
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm text-white/80 mb-2">
+                      Select departure days
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {daysOfWeek.map((day) => (
+                        <button
+                          key={day}
+                          type="button"
+                          onClick={() => toggleDayOfWeek("departure", day)}
+                          className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                            searchParams.selectedDepartureDays?.includes(day)
+                              ? "bg-blue-500 text-white"
+                              : "bg-white/20 text-white hover:bg-white/30"
+                          }`}
+                        >
+                          {day}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {tripType === "roundtrip" && (
+                    <div>
+                      <p className="text-sm text-white/80 mb-2">
+                        Select return days
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {daysOfWeek.map((day) => (
+                          <button
+                            key={day}
+                            type="button"
+                            onClick={() => toggleDayOfWeek("return", day)}
+                            className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                              searchParams.selectedReturnDays?.includes(day)
+                                ? "bg-blue-500 text-white"
+                                : "bg-white/20 text-white hover:bg-white/30"
+                            }`}
+                          >
+                            {day}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {searchParams.dateSearchType === "duration" && (
+                <div className="flex gap-3">
+                  <input
+                    type="number"
+                    placeholder="Trip duration (days)"
+                    min="1"
+                    max="90"
+                    value={searchParams.tripDuration}
+                    onChange={(e) =>
+                      handleFieldChange("tripDuration", e.target.value)
+                    }
+                    className="flex-1 rounded-lg border-0 bg-white/90 backdrop-blur-sm px-4 py-3 text-gray-900 placeholder-gray-500 shadow-lg focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
+                  />
+                  <div className="flex-1 relative group" style={{ zIndex: 40 }}>
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
+                      <Calendar className="h-5 w-5 text-emerald-400" />
+                    </div>
+                    <DatePicker
+                      selected={
+                        searchParams.earliestDeparture
+                          ? new Date(searchParams.earliestDeparture)
+                          : null
+                      }
+                      onChange={(date: Date | null) =>
+                        handleFieldChange(
+                          "earliestDeparture",
+                          date ? date.toISOString().split("T")[0] : ""
+                        )
+                      }
+                      placeholderText="Earliest departure"
+                      dateFormat="yyyy-MM-dd"
+                      minDate={new Date()}
+                      className="w-full pl-12 pr-4 py-3 bg-white/90 backdrop-blur-sm rounded-lg border-0 text-gray-900 placeholder-gray-500 shadow-lg focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all cursor-pointer"
+                      wrapperClassName="w-full"
+                      popperClassName="!z-50"
+                      popperPlacement="bottom-start"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Layover Preferences */}
           <div className="space-y-3">
@@ -289,46 +369,38 @@ export default function AdvancedOptions({
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <select
-                name="maxStops"
-                value={layoverPrefs.maxStops}
-                onChange={(e) =>
-                  setLayoverPrefs((prev) => ({
-                    ...prev,
-                    maxStops: e.target.value,
-                  }))
-                }
+                value={searchParams.maxStops}
+                onChange={(e) => handleFieldChange("maxStops", e.target.value)}
                 className="rounded-lg border-0 bg-white backdrop-blur-sm px-4 py-3 text-gray-900 shadow-lg focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
               >
-                <option value="non-stop">Non-stop only</option>
+                <option value="any">Any stops</option>
+                <option value="0">Non-stop only</option>
                 <option value="1">Max 1 stop</option>
                 <option value="2">Max 2 stops</option>
-                <option value="any">Any stops</option>
               </select>
 
               <input
                 type="text"
-                name="minLayoverTime"
-                placeholder="Min layover (e.g., 1h)"
-                value={layoverPrefs.minLayoverTime}
+                placeholder="Min layover (hours)"
+                value={searchParams.minLayoverTime}
                 onChange={(e) =>
-                  setLayoverPrefs((prev) => ({
-                    ...prev,
-                    minLayoverTime: e.target.value,
-                  }))
+                  handleFieldChange(
+                    "minLayoverTime",
+                    parseLayoverTime(e.target.value)
+                  )
                 }
                 className="rounded-lg border-0 bg-white backdrop-blur-sm px-4 py-3 text-gray-900 placeholder-gray-500 shadow-lg focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
               />
 
               <input
                 type="text"
-                name="maxLayoverTime"
-                placeholder="Max layover (e.g., 4h)"
-                value={layoverPrefs.maxLayoverTime}
+                placeholder="Max layover (hours)"
+                value={searchParams.maxLayoverTime}
                 onChange={(e) =>
-                  setLayoverPrefs((prev) => ({
-                    ...prev,
-                    maxLayoverTime: e.target.value,
-                  }))
+                  handleFieldChange(
+                    "maxLayoverTime",
+                    parseLayoverTime(e.target.value)
+                  )
                 }
                 className="rounded-lg border-0 bg-white/90 backdrop-blur-sm px-4 py-3 text-gray-900 placeholder-gray-500 shadow-lg focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
               />
@@ -337,14 +409,16 @@ export default function AdvancedOptions({
             <div className="space-y-2">
               <label className="text-white text-sm flex items-center gap-2">
                 <MapPin size={16} />
-                Layover Cities
+                Preferred Layover Cities
               </label>
               <div className="flex gap-2">
                 <input
                   type="text"
-                  placeholder="Add city (e.g., Dubai)"
+                  placeholder="Add city (e.g., DXB)"
                   value={newLayoverCity}
-                  onChange={(e) => setNewLayoverCity(e.target.value)}
+                  onChange={(e) =>
+                    setNewLayoverCity(e.target.value.toUpperCase())
+                  }
                   onKeyPress={(e) =>
                     e.key === "Enter" && (e.preventDefault(), addLayoverCity())
                   }
@@ -359,7 +433,7 @@ export default function AdvancedOptions({
                 </button>
               </div>
               <div className="flex flex-wrap gap-2">
-                {layoverPrefs.preferredLayoverCities.map((city) => (
+                {searchParams.preferredLayoverCities.map((city) => (
                   <span
                     key={city}
                     className="flex items-center gap-1 px-3 py-1 bg-blue-500/70 text-white rounded-full text-sm"
@@ -376,6 +450,21 @@ export default function AdvancedOptions({
                 ))}
               </div>
             </div>
+          </div>
+
+          {/* Price Filter */}
+          <div className="space-y-3">
+            <label className="text-white font-medium flex items-center gap-2">
+              <DollarSign size={18} />
+              Maximum Price
+            </label>
+            <input
+              type="number"
+              placeholder="Max price (optional)"
+              value={searchParams.maxPrice}
+              onChange={(e) => handleFieldChange("maxPrice", e.target.value)}
+              className="w-full rounded-lg border-0 bg-white/90 backdrop-blur-sm px-4 py-3 text-gray-900 placeholder-gray-500 shadow-lg focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
+            />
           </div>
         </div>
       )}
