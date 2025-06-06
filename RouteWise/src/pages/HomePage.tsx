@@ -14,6 +14,14 @@ import Header from "../components/Header";
 import SearchForm from "../components/SearchForm";
 
 export default function HomePage() {
+  // Ref for the search form section
+  const searchFormRef = useRef<HTMLDivElement>(null);
+
+  // State to pass pre-filled destination to SearchForm
+  const [prefilledDestination, setPrefilledDestination] = useState<{
+    code: string;
+    display: string;
+  } | null>(null);
 
   // TBA refactor
   const destinationSections = [
@@ -21,6 +29,7 @@ export default function HomePage() {
       city: "Paris",
       country: "France",
       airport: "Charles de Gaulle Airport (CDG)",
+      airportCode: "CDG",
       image:
         "https://images.unsplash.com/photo-1549144511-f099e773c147?w=800&h=600&fit=crop",
       description:
@@ -37,6 +46,7 @@ export default function HomePage() {
       city: "Tokyo",
       country: "Japan",
       airport: "Haneda Airport (HND)",
+      airportCode: "HND",
       image:
         "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800&h=600&fit=crop",
       description:
@@ -53,6 +63,7 @@ export default function HomePage() {
       city: "New York",
       country: "USA",
       airport: "John F. Kennedy Airport (JFK)",
+      airportCode: "JFK",
       image:
         "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=800&h=600&fit=crop",
       description:
@@ -69,6 +80,7 @@ export default function HomePage() {
       city: "Sydney",
       country: "Australia",
       airport: "Kingsford Smith Airport (SYD)",
+      airportCode: "SYD",
       image:
         "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop",
       description:
@@ -110,6 +122,21 @@ export default function HomePage() {
     return () => observers.forEach((ob) => ob.disconnect());
   }, []);
 
+  const handleSearchFlights = (
+    destination: (typeof destinationSections)[0]
+  ) => {
+    // Set the prefilled destination
+    setPrefilledDestination({
+      code: destination.airportCode,
+      display: `${destination.city} - ${destination.airport}`,
+    });
+
+    // Scroll to the search form
+    searchFormRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+  };
   return (
     <Layout
       hero={
@@ -138,13 +165,14 @@ export default function HomePage() {
               </div>
               {/* Search Form with Fade Animation */}
               <div
+                ref={searchFormRef}
                 className={`transition-all duration-1000 delay-300 ${
                   isLoaded
                     ? "translate-y-0 opacity-100"
                     : "translate-y-8 opacity-0"
                 }`}
               >
-                <SearchForm />
+                <SearchForm prefilledDestination={prefilledDestination} />
               </div>
             </div>
           </div>
@@ -257,7 +285,10 @@ export default function HomePage() {
                         })}
                       </div>
                     </div>
-                    <button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-8 py-4 rounded-2xl font-bold text-lg flex items-center gap-3 transition-all duration-300 group-hover:translate-x-2 shadow-lg hover:shadow-xl">
+                    <button
+                      onClick={() => handleSearchFlights(destination)}
+                      className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-8 py-4 rounded-2xl font-bold text-lg flex items-center gap-3 transition-all duration-300 group-hover:translate-x-2 shadow-lg hover:shadow-xl"
+                    >
                       Search Flights
                       <ArrowRight className="w-6 h-6" />
                     </button>

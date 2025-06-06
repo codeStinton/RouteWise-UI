@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Calendar,
@@ -53,12 +53,20 @@ export interface SearchFormData {
   }>;
 }
 
-export default function SearchForm() {
+interface SearchFormProps {
+  prefilledDestination?: {
+    code: string;
+    display: string;
+  } | null;
+}
+
+export default function SearchForm({ prefilledDestination }: SearchFormProps) {
   const navigate = useNavigate();
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [tripType, setTripType] = useState<
     "one-way" | "roundtrip" | "multi-city"
   >("roundtrip");
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
   const months = [
     { value: "1", label: "January" },
@@ -106,6 +114,17 @@ export default function SearchForm() {
       { id: 2, from: "", to: "", date: "" },
     ],
   });
+
+  // Handle prefilled destination
+  useEffect(() => {
+    if (prefilledDestination) {
+      setSearchParams(prev => ({
+        ...prev,
+        to: prefilledDestination.code,
+        toDisplay: prefilledDestination.display,
+      }));
+    }
+  }, [prefilledDestination]);
 
   const handleInputChange = (field: keyof SearchFormData, value: any) => {
     setSearchParams((prev) => ({
@@ -191,9 +210,14 @@ export default function SearchForm() {
     const validation = validateSearch();
 
     if (!validation.isValid) {
-      alert(validation.errors.join("\n"));
+      setValidationErrors(validation.errors);
+      // Clear errors after 5 seconds
+      setTimeout(() => setValidationErrors([]), 5000);
       return;
     }
+
+    // Clear any existing errors
+    setValidationErrors([]);
 
     // Convert day names to numbers for API
     const dayMap: Record<string, number> = {
@@ -387,9 +411,9 @@ export default function SearchForm() {
             ) : (
               /* Placeholder for flexible date info */
               <div className="lg:col-span-4 flex items-center justify-center">
-                <div className="bg-blue-500/20 backdrop-blur-sm rounded-xl px-4 py-2 flex items-center gap-2">
-                  <AlertCircle className="h-4 w-4 text-blue-400" />
-                  <span className="text-sm text-white">
+                <div className="w-full py-4 px-4 bg-white/10 backdrop-blur-sm rounded-xl border border-slate-700/50 flex items-center justify-center gap-2">
+                  <AlertCircle className="h-5 w-5 text-blue-400" />
+                  <span className="text-sm text-white font-medium">
                     {searchParams.dateSearchType === "flexible-month" &&
                       `Flexible: ${
                         searchParams.flexibleMonth
@@ -452,6 +476,36 @@ export default function SearchForm() {
               <span className="font-medium">Advanced Options</span>
             </button>
           </div>
+
+          {/* Validation Errors */}
+          <AnimatePresence>
+            {validationErrors.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+                className="mt-4 bg-red-500/20 backdrop-blur-sm border border-red-500/50 rounded-xl p-4"
+              >
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="h-5 w-5 text-red-400 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <h4 className="text-sm font-semibold text-red-300 mb-1">
+                      Please correct the following:
+                    </h4>
+                    <ul className="space-y-1">
+                      {validationErrors.map((error, index) => (
+                        <li key={index} className="text-sm text-red-200 flex items-start gap-2">
+                          <span className="text-red-400 mt-1">•</span>
+                          <span>{error}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Advanced Options */}
           <AnimatePresence>
