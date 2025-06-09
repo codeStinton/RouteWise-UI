@@ -11,7 +11,7 @@ import {
 import ReactDatePicker, { type DatePickerProps } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import type { SearchFormData } from "../types/search.types";
-import { DAYS_OF_WEEK, MONTHS } from "../constants/dates"; // adjust the path
+import { DAYS_OF_WEEK, MONTHS } from "../constants/dates";
 
 const DatePicker = ReactDatePicker as unknown as React.FC<DatePickerProps>;
 
