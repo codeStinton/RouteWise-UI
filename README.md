@@ -1,5 +1,7 @@
 ## 🚀 About
 
+**This is the frontend repository. For the backend API, please visit: [RouteWise-API](https://github.com/codeStinton/RouteWise-API)**
+
 RouteWise is a modern, responsive flight search application that helps users find the best flight deals across multiple airlines and destinations. With support for flexible date searches, multi-city trips, and advanced filtering options, RouteWise makes travel planning effortless.
 
 ## ✨ Features
