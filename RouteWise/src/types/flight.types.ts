@@ -46,3 +46,14 @@ export interface FilterState {
   airlines: string[];
   departureTime: string[];
 }
+
+export interface FlightCardProps {
+  airline: string;
+  departTime: string;
+  arriveTime: string;
+  departCode: string;
+  arriveCode: string;
+  duration: string;
+  stops: string;
+  price: string;
+}

@@ -1,4 +1,3 @@
-// hooks/useFlightSearch.ts
 import { useState, useEffect } from "react";
 import type { Flight, FlightSearchParams } from "../types/flight.types";
 import { flightApi } from "../services/flightApi";

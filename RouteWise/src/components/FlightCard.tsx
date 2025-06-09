@@ -1,15 +1,5 @@
 import { Clock, Plane, MapPin, ArrowRight } from "lucide-react";
-
-interface FlightCardProps {
-  airline: string;
-  departTime: string;
-  arriveTime: string;
-  departCode: string;
-  arriveCode: string;
-  duration: string;
-  stops: string;
-  price: string;
-}
+import type { FlightCardProps } from "../types/flight.types";
 
 export default function FlightCard({
   airline,
