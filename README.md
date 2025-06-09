@@ -6,7 +6,6 @@ RouteWise is a modern, responsive flight search application that helps users fin
 
 ## 🛠️ Tech Stack
 
-### Frontend
 - **React 18** - UI library
 - **TypeScript** - Type safety
 - **React Router v6** - Navigation
