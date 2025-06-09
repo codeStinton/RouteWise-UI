@@ -11,6 +11,7 @@ import {
 import ReactDatePicker, { type DatePickerProps } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import type { SearchFormData } from "../types/search.types";
+import { DAYS_OF_WEEK, MONTHS } from "../constants/dates"; // adjust the path
 
 const DatePicker = ReactDatePicker as unknown as React.FC<DatePickerProps>;
 
@@ -32,21 +33,6 @@ export default function AdvancedOptions({
 }: AdvancedOptionsProps) {
   const [newLayoverCity, setNewLayoverCity] = useState("");
 
-  const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  const months = [
-    { value: "1", label: "January" },
-    { value: "2", label: "February" },
-    { value: "3", label: "March" },
-    { value: "4", label: "April" },
-    { value: "5", label: "May" },
-    { value: "6", label: "June" },
-    { value: "7", label: "July" },
-    { value: "8", label: "August" },
-    { value: "9", label: "September" },
-    { value: "10", label: "October" },
-    { value: "11", label: "November" },
-    { value: "12", label: "December" },
-  ];
 
   const handleFieldChange = (field: keyof SearchFormData, value: any) => {
     onSearchParamsChange({
@@ -247,7 +233,7 @@ export default function AdvancedOptions({
                     className="flex-1 rounded-lg border-0 bg-white backdrop-blur-sm px-4 py-3 text-gray-900 shadow-lg focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
                   >
                     <option value="">Select Month</option>
-                    {months.map((month) => (
+                    {MONTHS.map((month) => (
                       <option key={month.value} value={month.value}>
                         {month.label}
                       </option>
@@ -274,7 +260,7 @@ export default function AdvancedOptions({
                       Select departure days
                     </p>
                     <div className="flex flex-wrap gap-2">
-                      {daysOfWeek.map((day) => (
+                      {DAYS_OF_WEEK.map((day) => (
                         <button
                           key={day}
                           type="button"
@@ -297,7 +283,7 @@ export default function AdvancedOptions({
                         Select return days
                       </p>
                       <div className="flex flex-wrap gap-2">
-                        {daysOfWeek.map((day) => (
+                        {DAYS_OF_WEEK.map((day) => (
                           <button
                             key={day}
                             type="button"
