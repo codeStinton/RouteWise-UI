@@ -107,7 +107,6 @@ export default function FlightCard({
         </div>
       </div>
 
-      {/* Bottom gradient accent */}
       <div className="h-1 bg-blue-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
     </div>
   );

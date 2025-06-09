@@ -1,105 +1,23 @@
 import { useEffect, useRef, useState } from "react";
-import {
-  Plane,
-  MapPin,
-  Star,
-  ArrowRight,
-  Building2,
-  Mountain,
-  Camera,
-  Waves,
-} from "lucide-react";
+import { Plane, MapPin, Star, ArrowRight } from "lucide-react";
 import Layout from "../components/Layout";
 import Header from "../components/Header";
 import SearchForm from "../components/SearchForm";
+import { POPULAR_DESTINATIONS } from "../constants/destinations";
+import type { Destination } from "../types/destination.types";
 
 export default function HomePage() {
-  // Ref for the search form section
   const searchFormRef = useRef<HTMLDivElement>(null);
-
-  // State to pass pre-filled destination to SearchForm
   const [prefilledDestination, setPrefilledDestination] = useState<{
     code: string;
     display: string;
   } | null>(null);
-
-  // TBA refactor
-  const destinationSections = [
-    {
-      city: "Paris",
-      country: "France",
-      airport: "Charles de Gaulle Airport (CDG)",
-      airportCode: "CDG",
-      image:
-        "https://images.unsplash.com/photo-1549144511-f099e773c147?w=800&h=600&fit=crop",
-      description:
-        "One of Europe's most iconic cities, Paris is known for its art, food, and fashion.",
-      highlights: [
-        { name: "Eiffel Tower", icon: Building2 },
-        { name: "Louvre Museum", icon: Camera },
-        { name: "Notre-Dame", icon: Building2 },
-      ],
-      rating: 4.8,
-      priceFrom: "$299",
-    },
-    {
-      city: "Tokyo",
-      country: "Japan",
-      airport: "Haneda Airport (HND)",
-      airportCode: "HND",
-      image:
-        "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800&h=600&fit=crop",
-      description:
-        "Tokyo blends tradition with cutting-edge modernity in the heart of Japan.",
-      highlights: [
-        { name: "Shibuya Crossing", icon: Building2 },
-        { name: "Mount Fuji", icon: Mountain },
-        { name: "Cherry Blossoms", icon: Camera },
-      ],
-      rating: 4.9,
-      priceFrom: "$899",
-    },
-    {
-      city: "New York",
-      country: "USA",
-      airport: "John F. Kennedy Airport (JFK)",
-      airportCode: "JFK",
-      image:
-        "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=800&h=600&fit=crop",
-      description:
-        "The Big Apple offers culture, nightlife, and global influence.",
-      highlights: [
-        { name: "Statue of Liberty", icon: Building2 },
-        { name: "Central Park", icon: Mountain },
-        { name: "Broadway", icon: Camera },
-      ],
-      rating: 4.7,
-      priceFrom: "$199",
-    },
-    {
-      city: "Sydney",
-      country: "Australia",
-      airport: "Kingsford Smith Airport (SYD)",
-      airportCode: "SYD",
-      image:
-        "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop",
-      description:
-        "Harbour views, beaches and vibrant arts define sunny Sydney.",
-      highlights: [
-        { name: "Opera House", icon: Building2 },
-        { name: "Harbour Bridge", icon: Building2 },
-        { name: "Bondi Beach", icon: Waves },
-      ],
-      rating: 4.6,
-      priceFrom: "$1,299",
-    },
-  ];
+  const [isLoaded, setIsLoaded] = useState(false);
 
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [visible, setVisible] = useState(() =>
-    new Array(destinationSections.length).fill(false)
+    new Array(POPULAR_DESTINATIONS.length).fill(false)
   );
-  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     setTimeout(() => setIsLoaded(true), 100);
@@ -107,36 +25,35 @@ export default function HomePage() {
     const observers: IntersectionObserver[] = [];
     sectionRefs.current.forEach((el, i) => {
       if (!el) return;
-      const ob = new IntersectionObserver(
-        ([entry]) =>
+      const observer = new IntersectionObserver(
+        ([entry]) => {
           setVisible((prev) => {
             const next = [...prev];
             next[i] = entry.isIntersecting;
             return next;
-          }),
+          });
+        },
         { threshold: 0.2 }
       );
-      ob.observe(el);
-      observers.push(ob);
+      observer.observe(el);
+      observers.push(observer);
     });
-    return () => observers.forEach((ob) => ob.disconnect());
+
+    return () => observers.forEach((observer) => observer.disconnect());
   }, []);
 
-  const handleSearchFlights = (
-    destination: (typeof destinationSections)[0]
-  ) => {
-    // Set the prefilled destination
+  const handleSearchFlights = (destination: Destination) => {
     setPrefilledDestination({
       code: destination.airportCode,
       display: `${destination.city} - ${destination.airport}`,
     });
 
-    // Scroll to the search form
     searchFormRef.current?.scrollIntoView({
       behavior: "smooth",
       block: "center",
     });
   };
+
   return (
     <Layout
       hero={
@@ -163,7 +80,8 @@ export default function HomePage() {
                   Find your perfect trip in one quick search.
                 </p>
               </div>
-              {/* Search Form with Fade Animation */}
+
+              {/* Search Form */}
               <div
                 ref={searchFormRef}
                 className={`transition-all duration-1000 delay-300 ${
@@ -197,7 +115,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Enhanced Destinations Section */}
+      {/* Popular Destinations Section */}
       <section className="py-24 bg-gradient-to-b from-gray-50 to-white">
         <div className="container mx-auto px-6 max-w-8xl">
           <div className="text-center mb-20">
@@ -211,7 +129,7 @@ export default function HomePage() {
           </div>
 
           <div className="grid gap-12 max-w-7xl mx-auto">
-            {destinationSections.map((destination, i) => (
+            {POPULAR_DESTINATIONS.map((destination, i) => (
               <div
                 key={i}
                 ref={(el) => {
@@ -265,7 +183,7 @@ export default function HomePage() {
                       {destination.description}
                     </p>
 
-                    {/* Enhanced Highlights */}
+                    {/* Highlights */}
                     <div className="mb-10">
                       <h4 className="font-bold text-gray-900 mb-4 text-lg">
                         Top Attractions:
@@ -285,6 +203,7 @@ export default function HomePage() {
                         })}
                       </div>
                     </div>
+
                     <button
                       onClick={() => handleSearchFlights(destination)}
                       className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-8 py-4 rounded-2xl font-bold text-lg flex items-center gap-3 transition-all duration-300 group-hover:translate-x-2 shadow-lg hover:shadow-xl"

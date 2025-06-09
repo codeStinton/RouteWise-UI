@@ -16,30 +16,17 @@ import Header from "../components/Header";
 import Layout from "../components/Layout";
 import FlightCard from "../components/FlightCard";
 import { useFlightSearch } from "../hooks/useFlightSearch";
-import type { FlightParams } from "../hooks/useFlightSearch";
-
-function formatDate(date: string | undefined) {
-  if (!date) return "";
-  try {
-    return new Intl.DateTimeFormat("en-GB", {
-      weekday: "short",
-      day: "numeric",
-      month: "short",
-    }).format(new Date(date));
-  } catch {
-    return date;
-  }
-}
-
-interface FilterState {
-  priceRange: [number, number];
-  stops: string[];
-  airlines: string[];
-  departureTime: string[];
-}
+import type { FlightSearchParams, FilterState } from "../types/flight.types";
+import {
+  formatDate,
+  getDurationMinutes,
+  getStopsCount,
+} from "../utils/formatters";
+import { MONTHS, DAYS_OF_WEEK, TIME_PERIODS } from "../constants/dates";
+import FiltersSidebar from "../components/FiltersSidebar";
 
 export default function ResultsPage() {
-  const { state } = useLocation() as { state: FlightParams | null };
+  const { state } = useLocation() as { state: FlightSearchParams | null };
   const { data, isLoading, error } = state
     ? useFlightSearch(state)
     : { data: null, isLoading: false, error: null };
@@ -66,12 +53,11 @@ export default function ResultsPage() {
 
     let filtered = [...data];
 
-    // Apply price filter
+    // Apply filters
     filtered = filtered.filter(
       (flight) => flight.price <= filters.priceRange[1]
     );
 
-    // Apply stops filter
     if (filters.stops.length > 0) {
       filtered = filtered.filter((flight) => {
         if (filters.stops.includes("Direct") && flight.stops === "Direct")
@@ -89,40 +75,21 @@ export default function ResultsPage() {
       });
     }
 
-    // Apply airline filter
     if (filters.airlines.length > 0) {
       filtered = filtered.filter((flight) =>
         filters.airlines.includes(flight.airline)
       );
     }
 
-    // Apply departure time filter
     if (filters.departureTime.length > 0) {
       filtered = filtered.filter((flight) => {
         const hour = parseInt(flight.departTime.split(":")[0]);
-
-        if (
-          filters.departureTime.includes("Early Morning") &&
-          hour >= 6 &&
-          hour < 12
-        )
-          return true;
-        if (
-          filters.departureTime.includes("Afternoon") &&
-          hour >= 12 &&
-          hour < 18
-        )
-          return true;
-        if (
-          filters.departureTime.includes("Evening") &&
-          hour >= 18 &&
-          hour < 24
-        )
-          return true;
-        if (filters.departureTime.includes("Night") && hour >= 0 && hour < 6)
-          return true;
-
-        return false;
+        return filters.departureTime.some((timePeriod) => {
+          const period = TIME_PERIODS.find((p) => p.label === timePeriod);
+          if (!period) return false;
+          const [start, end] = period.hourRange;
+          return hour >= start && (end === 24 ? true : hour < end);
+        });
       });
     }
 
@@ -132,25 +99,12 @@ export default function ResultsPage() {
         case "price":
           return a.price - b.price;
         case "duration":
-          // Parse duration (e.g., "2h 30m" -> 150 minutes)
-          const getDurationMinutes = (duration: string) => {
-            const match = duration.match(/(\d+)h\s*(\d+)m/);
-            if (match) {
-              return parseInt(match[1]) * 60 + parseInt(match[2]);
-            }
-            return 0;
-          };
           return (
             getDurationMinutes(a.duration) - getDurationMinutes(b.duration)
           );
         case "departure":
           return a.departTime.localeCompare(b.departTime);
         case "stops":
-          const getStopsCount = (stops: string) => {
-            if (stops === "Direct") return 0;
-            if (stops === "1 stop") return 1;
-            return 2;
-          };
           return getStopsCount(a.stops) - getStopsCount(b.stops);
         default:
           return 0;
@@ -161,11 +115,14 @@ export default function ResultsPage() {
   }, [data, filters, sortBy]);
 
   const handleFilterChange = (type: keyof FilterState, value: any) => {
-    setFilters((prev) => ({
-      ...prev,
-      [type]: value,
-    }));
+    setFilters((prev) => ({ ...prev, [type]: value }));
   };
+
+  // Calculate max price from data for slider
+  const maxPriceInData = useMemo(() => {
+    if (!data || data.length === 0) return 2000;
+    return Math.ceil(Math.max(...data.map((f) => f.price)) / 100) * 100;
+  }, [data]);
 
   // Format search summary based on search type
   const getSearchSummary = () => {
@@ -232,20 +189,6 @@ export default function ResultsPage() {
         break;
 
       case "flexible-month":
-        const monthNames = [
-          "Jan",
-          "Feb",
-          "Mar",
-          "Apr",
-          "May",
-          "Jun",
-          "Jul",
-          "Aug",
-          "Sep",
-          "Oct",
-          "Nov",
-          "Dec",
-        ];
         elements.push(
           <div
             key="flexible-month"
@@ -255,14 +198,13 @@ export default function ResultsPage() {
               <Calendar className="w-4 h-4" />
             </div>
             <span className="font-medium text-sm">
-              {state.month ? monthNames[state.month - 1] : ""} {state.year}
+              {state.month && MONTHS[state.month - 1]?.label} {state.year}
             </span>
           </div>
         );
         break;
 
       case "flexible-days":
-        const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
         elements.push(
           <div
             key="flexible-days"
@@ -272,12 +214,10 @@ export default function ResultsPage() {
               <CalendarDays className="w-4 h-4" />
             </div>
             <span className="font-medium text-sm">
-              {state.departureDayOfWeek !== undefined
-                ? dayNames[state.departureDayOfWeek]
-                : ""}
-              {state.returnDayOfWeek !== undefined
-                ? ` → ${dayNames[state.returnDayOfWeek]}`
-                : ""}
+              {state.departureDayOfWeek !== undefined &&
+                DAYS_OF_WEEK[state.departureDayOfWeek]}
+              {state.returnDayOfWeek !== undefined &&
+                ` → ${DAYS_OF_WEEK[state.returnDayOfWeek]}`}
             </span>
           </div>
         );
@@ -319,12 +259,6 @@ export default function ResultsPage() {
     return elements;
   };
 
-  // Calculate max price from data for slider
-  const maxPriceInData = useMemo(() => {
-    if (!data || data.length === 0) return 2000;
-    return Math.ceil(Math.max(...data.map((f) => f.price)) / 100) * 100;
-  }, [data]);
-
   return (
     <Layout
       hero={
@@ -344,7 +278,6 @@ export default function ResultsPage() {
               </div>
 
               <div className="relative z-10 text-center space-y-4 pt-24">
-                {/* Search Parameters */}
                 <div className="flex flex-wrap items-center justify-center gap-3 text-white">
                   {getSearchSummary()}
                 </div>
@@ -443,162 +376,12 @@ export default function ResultsPage() {
 
           <div className="flex gap-8">
             {/* Filters Sidebar */}
-            <div className="w-80 flex-shrink-0">
-              <div className="sticky top-6 space-y-6">
-                {/* Enhanced Filter Panel */}
-                <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-100">
-                    <div className="flex items-center gap-2">
-                      <Filter className="w-5 h-5 text-blue-600" />
-                      <h3 className="font-semibold text-lg text-gray-900">
-                        Filters
-                      </h3>
-                    </div>
-                  </div>
-
-                  <div className="p-6 space-y-6">
-                    {/* Price Range */}
-                    <div>
-                      <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
-                        💰 Price Range
-                      </h4>
-                      <div className="space-y-3">
-                        <input
-                          type="range"
-                          min="0"
-                          max="2000"
-                          value={filters.priceRange[1]}
-                          onChange={(e) =>
-                            handleFilterChange("priceRange", [
-                              0,
-                              parseInt(e.target.value),
-                            ])
-                          }
-                          className="w-full h-2 bg-gradient-to-r from-blue-200 to-blue-500 rounded-lg appearance-none cursor-pointer slider"
-                        />
-                        <div className="flex justify-between text-sm font-medium">
-                          <span className="text-gray-600">£0</span>
-                          <span className="text-blue-600">
-                            £{filters.priceRange[1]}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Stops */}
-                    <div>
-                      <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
-                        ✈️ Stops
-                      </h4>
-                      <div className="space-y-3">
-                        {["Direct", "1 stop", "2+ stops"].map((stop) => (
-                          <label
-                            key={stop}
-                            className="flex items-center group cursor-pointer"
-                          >
-                            <input
-                              type="checkbox"
-                              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                              checked={filters.stops.includes(stop)}
-                              onChange={(e) => {
-                                const newStops = e.target.checked
-                                  ? [...filters.stops, stop]
-                                  : filters.stops.filter((s) => s !== stop);
-                                handleFilterChange("stops", newStops);
-                              }}
-                            />
-                            <span className="ml-3 text-sm text-gray-700 group-hover:text-gray-900">
-                              {stop}
-                            </span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Airlines */}
-                    {availableAirlines.length > 0 && (
-                      <div>
-                        <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
-                          🏢 Airlines
-                        </h4>
-                        <div className="space-y-3">
-                          {availableAirlines.map((airline) => (
-                            <label
-                              key={airline}
-                              className="flex items-center group cursor-pointer"
-                            >
-                              <input
-                                type="checkbox"
-                                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                                checked={filters.airlines.includes(airline)}
-                                onChange={(e) => {
-                                  const newAirlines = e.target.checked
-                                    ? [...filters.airlines, airline]
-                                    : filters.airlines.filter(
-                                        (a) => a !== airline
-                                      );
-                                  handleFilterChange("airlines", newAirlines);
-                                }}
-                              />
-                              <span className="ml-3 text-sm text-gray-700 group-hover:text-gray-900">
-                                {airline}
-                              </span>
-                            </label>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Departure Time */}
-                    <div>
-                      <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
-                        🕐 Departure Time
-                      </h4>
-                      <div className="grid grid-cols-2 gap-3">
-                        {[
-                          {
-                            label: "Early Morning",
-                            time: "6AM - 12PM",
-                            icon: "🌅",
-                          },
-                          {
-                            label: "Afternoon",
-                            time: "12PM - 6PM",
-                            icon: "☀️",
-                          },
-                          { label: "Evening", time: "6PM - 12AM", icon: "🌆" },
-                          { label: "Night", time: "12AM - 6AM", icon: "🌙" },
-                        ].map((period) => (
-                          <button
-                            key={period.label}
-                            onClick={() => {
-                              const newTimes = filters.departureTime.includes(
-                                period.label
-                              )
-                                ? filters.departureTime.filter(
-                                    (t) => t !== period.label
-                                  )
-                                : [...filters.departureTime, period.label];
-                              handleFilterChange("departureTime", newTimes);
-                            }}
-                            className={`p-3 border-2 rounded-lg text-xs transition-all ${
-                              filters.departureTime.includes(period.label)
-                                ? "border-blue-500 bg-blue-50 text-blue-700"
-                                : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                            }`}
-                          >
-                            <div className="text-lg mb-1">{period.icon}</div>
-                            <div className="font-medium">{period.label}</div>
-                            <div className="text-gray-500">{period.time}</div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
+            <FiltersSidebar
+              filters={filters}
+              onFilterChange={handleFilterChange}
+              availableAirlines={availableAirlines}
+              maxPrice={maxPriceInData}
+            />
             {/* Main Content */}
             <div className="flex-1 min-w-0">
               <div className="flex gap-6">
@@ -663,7 +446,7 @@ export default function ResultsPage() {
                   )}
                 </div>
 
-                {/* Right Trip Summary Panel */}
+                {/* Right Trip Panel */}
                 <div className="w-80 flex-shrink-0 hidden xl:block">
                   <div className="sticky top-6 space-y-6">
                     <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
@@ -688,9 +471,8 @@ export default function ResultsPage() {
                         <div className="absolute bottom-4 left-4 right-4"></div>
                       </div>
                     </div>
-                    {/* Trip Summary */}
                     {state && (
-                      <div className="bg-white via-indigo-50 to-purple-50 rounded-xl shadow-lg border border-blue-100 overflow-hidden">
+                      <div className="bg-white rounded-xl shadow-lg border border-blue-100 overflow-hidden">
                         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4">
                           <h3 className="font-semibold text-lg text-gray-900 flex items-center gap-2">
                             ✈️ Trip Summary
@@ -719,7 +501,6 @@ export default function ResultsPage() {
                               </span>
                             </div>
 
-                            {/* Date info based on search type */}
                             {state.dateSearchType === "specific" &&
                               state.departDate && (
                                 <>
@@ -743,39 +524,6 @@ export default function ResultsPage() {
                                   )}
                                 </>
                               )}
-
-                            {state.dateSearchType === "flexible-month" && (
-                              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                <span className="text-gray-600 flex items-center gap-2">
-                                  📅 Month:
-                                </span>
-                                <span className="font-semibold text-gray-900">
-                                  {state.month}/{state.year}
-                                </span>
-                              </div>
-                            )}
-
-                            {state.dateSearchType === "flexible-days" && (
-                              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                <span className="text-gray-600 flex items-center gap-2">
-                                  📅 Days:
-                                </span>
-                                <span className="font-semibold text-gray-900">
-                                  Flexible
-                                </span>
-                              </div>
-                            )}
-
-                            {state.dateSearchType === "duration" && (
-                              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                <span className="text-gray-600 flex items-center gap-2">
-                                  ⏱️ Duration:
-                                </span>
-                                <span className="font-semibold text-gray-900">
-                                  {state.durationDays} days
-                                </span>
-                              </div>
-                            )}
 
                             {state.maxStops !== undefined && (
                               <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">

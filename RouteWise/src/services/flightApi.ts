@@ -9,10 +9,8 @@ import {
   type LayoverV2,
   TravelerType,
 } from "../types/api";
-import { generateMockFlights } from "./mockData";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
-const USE_MOCK_DATA = import.meta.env.VITE_USE_MOCK_DATA === "true";
 
 class FlightApiService {
   private async fetchWithTimeout(
@@ -217,15 +215,6 @@ class FlightApiService {
 
   // Main search method that decides which API to use
   async searchFlights(params: FlightParams): Promise<Flight[]> {
-    // Use mock data if configured
-    if (USE_MOCK_DATA) {
-      return generateMockFlights(
-        params.from,
-        params.to,
-        params.departDate || new Date().toISOString().split("T")[0]
-      );
-    }
-
     try {
       if (params.tripType === "multi-city" && params.multiCityLegs) {
         // Use multi-city API
@@ -329,16 +318,6 @@ class FlightApiService {
         return this.transformV1ToFrontend(data);
       } catch (v1Error) {
         console.error("V1 API fallback also failed:", v1Error);
-
-        // If all APIs fail and we're in development, return mock data
-        if (import.meta.env.DEV) {
-          console.warn("Using mock data due to API failure");
-          return generateMockFlights(
-            params.from,
-            params.to,
-            params.departDate || new Date().toISOString().split("T")[0]
-          );
-        }
 
         throw new Error("Failed to search flights. Please try again later.");
       }

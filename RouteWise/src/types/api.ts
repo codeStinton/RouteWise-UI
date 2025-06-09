@@ -1,4 +1,3 @@
-// V1 API Types
 export interface FlightSearchRequestV1 {
   maxPrice?: number;
   oneWay?: boolean;

@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import ReactDatePicker, { type DatePickerProps } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import type { SearchFormData } from "./SearchForm";
+import type { SearchFormData } from "../types/search.types";
 
 const DatePicker = ReactDatePicker as unknown as React.FC<DatePickerProps>;
 
@@ -419,7 +419,7 @@ export default function AdvancedOptions({
                   onChange={(e) =>
                     setNewLayoverCity(e.target.value.toUpperCase())
                   }
-                  onKeyPress={(e) =>
+                  onKeyDown={(e) =>
                     e.key === "Enter" && (e.preventDefault(), addLayoverCity())
                   }
                   className="flex-1 rounded-lg border-0 bg-white/90 backdrop-blur-sm px-4 py-3 text-gray-900 placeholder-gray-500 shadow-lg focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"

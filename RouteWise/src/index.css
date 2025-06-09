@@ -1,6 +1,5 @@
 @import "tailwindcss";
 
-/* React DatePicker Custom Styles */
 .react-datepicker {
     background-color: rgb(15 23 42 / 0.95);
     border: 1px solid rgb(51 65 85 / 0.5);

@@ -1,97 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { Plane, X } from "lucide-react";
 import { createPortal } from "react-dom";
-
-interface Airport {
-  code: string;
-  name: string;
-  city: string;
-  country: string;
-}
-
-// Common airports - in production, this would come from an API
-const AIRPORTS: Airport[] = [
-  {
-    code: "JFK",
-    name: "John F. Kennedy International",
-    city: "New York",
-    country: "USA",
-  },
-  {
-    code: "LAX",
-    name: "Los Angeles International",
-    city: "Los Angeles",
-    country: "USA",
-  },
-  { code: "LHR", name: "Heathrow", city: "London", country: "UK" },
-  { code: "CDG", name: "Charles de Gaulle", city: "Paris", country: "France" },
-  { code: "ORY", name: "Orly", city: "Paris", country: "France" },
-  {
-    code: "MAD",
-    name: "Adolfo Suárez Madrid-Barajas",
-    city: "Madrid",
-    country: "Spain",
-  },
-  {
-    code: "FCO",
-    name: "Leonardo da Vinci-Fiumicino",
-    city: "Rome",
-    country: "Italy",
-  },
-  {
-    code: "SFO",
-    name: "San Francisco International",
-    city: "San Francisco",
-    country: "USA",
-  },
-  { code: "DXB", name: "Dubai International", city: "Dubai", country: "UAE" },
-  {
-    code: "SIN",
-    name: "Singapore Changi",
-    city: "Singapore",
-    country: "Singapore",
-  },
-  { code: "HND", name: "Haneda", city: "Tokyo", country: "Japan" },
-  {
-    code: "SYD",
-    name: "Sydney Kingsford Smith",
-    city: "Sydney",
-    country: "Australia",
-  },
-  {
-    code: "ATH",
-    name: "Athens International",
-    city: "Athens",
-    country: "Greece",
-  },
-  {
-    code: "AMS",
-    name: "Amsterdam Schiphol",
-    city: "Amsterdam",
-    country: "Netherlands",
-  },
-  { code: "BKK", name: "Suvarnabhumi", city: "Bangkok", country: "Thailand" },
-  {
-    code: "DEL",
-    name: "Indira Gandhi International",
-    city: "New Delhi",
-    country: "India",
-  },
-  {
-    code: "IST",
-    name: "Istanbul Airport",
-    city: "Istanbul",
-    country: "Turkey",
-  },
-  { code: "MUC", name: "Munich Airport", city: "Munich", country: "Germany" },
-  {
-    code: "BCN",
-    name: "Barcelona-El Prat",
-    city: "Barcelona",
-    country: "Spain",
-  },
-  { code: "MIA", name: "Miami International", city: "Miami", country: "USA" },
-];
+import { AIRPORTS } from "../constants/airports";
+import type { Airport } from "../types/search.types";
 
 interface AirportSelectorProps {
   value: string;
@@ -99,7 +10,6 @@ interface AirportSelectorProps {
   placeholder: string;
   icon?: React.ReactNode;
   className?: string;
-  usePortal?: boolean; // Option to use portal or not
 }
 
 export default function AirportSelector({
@@ -108,7 +18,6 @@ export default function AirportSelector({
   placeholder,
   icon,
   className = "",
-  usePortal = true,
 }: AirportSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -123,21 +32,20 @@ export default function AirportSelector({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Sync internal state when value prop changes
   useEffect(() => {
     setDisplayValue(value);
   }, [value]);
 
-  // Calculate dropdown position for portal
   const updateDropdownPosition = () => {
-    if (containerRef.current) {
-      const rect = containerRef.current.getBoundingClientRect();
-      setDropdownPosition({
-        top: rect.bottom + window.scrollY + 8, // 8px margin
-        left: rect.left + window.scrollX,
-        width: rect.width,
-      });
-    }
+    if (!containerRef.current) return;
+
+    const { bottom, left, width } =
+      containerRef.current.getBoundingClientRect();
+    setDropdownPosition({
+      top: bottom + 8,
+      left: left,
+      width: width,
+    });
   };
 
   useEffect(() => {
@@ -153,37 +61,25 @@ export default function AirportSelector({
     };
 
     const handleScroll = () => {
-      if (isOpen && usePortal) {
-        updateDropdownPosition();
-      }
-    };
-
-    const handleResize = () => {
-      if (isOpen && usePortal) {
+      if (isOpen) {
         updateDropdownPosition();
       }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
-    if (usePortal) {
-      window.addEventListener("scroll", handleScroll, true);
-      window.addEventListener("resize", handleResize);
-    }
+    window.addEventListener("scroll", handleScroll, true);
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
-      if (usePortal) {
-        window.removeEventListener("scroll", handleScroll, true);
-        window.removeEventListener("resize", handleResize);
-      }
+      window.removeEventListener("scroll", handleScroll, true);
     };
-  }, [isOpen, usePortal]);
+  }, [isOpen]);
 
   useEffect(() => {
-    if (isOpen && usePortal) {
+    if (isOpen) {
       updateDropdownPosition();
     }
-  }, [isOpen, usePortal]);
+  }, [isOpen]);
 
   const filteredAirports = AIRPORTS.filter((airport) => {
     const searchLower = search.toLowerCase();
@@ -228,16 +124,12 @@ export default function AirportSelector({
     <div
       ref={dropdownRef}
       className="bg-white rounded-xl shadow-2xl border border-gray-200 max-h-96 overflow-y-auto z-[9999]"
-      style={
-        usePortal
-          ? {
-              position: "fixed",
-              top: dropdownPosition.top,
-              left: dropdownPosition.left,
-              width: dropdownPosition.width,
-            }
-          : {}
-      }
+      style={{
+        position: "fixed",
+        top: dropdownPosition.top,
+        left: dropdownPosition.left,
+        width: dropdownPosition.width,
+      }}
     >
       {filteredAirports.length === 0 ? (
         <div className="p-4 text-center text-gray-500">No airports found</div>
@@ -298,16 +190,9 @@ export default function AirportSelector({
             </button>
           )}
         </div>
-
-        {/* Non-portal dropdown (fallback) */}
-        {isOpen && !usePortal && (
-          <div className="absolute z-50 w-full mt-2">{dropdownContent}</div>
-        )}
       </div>
 
-      {/* Portal dropdown */}
       {isOpen &&
-        usePortal &&
         typeof document !== "undefined" &&
         createPortal(dropdownContent, document.body)}
     </>
