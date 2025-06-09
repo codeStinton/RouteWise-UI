@@ -27,17 +27,20 @@ RouteWise is a modern, responsive flight search application that helps users fin
 ## 🎬 Demo
 
 ### Search Flow
-
-
 https://github.com/user-attachments/assets/82b8ef1a-c35e-4a14-a254-cbc9e1e0e8ea
 
-
-
 ### Filter Options
-![Filter Demo](assets/filter-demo.gif)
+https://github.com/user-attachments/assets/c2d6ea0c-4528-4dba-b99c-9cef85b64d65
 
-### Responsive Design
-![Mobile Demo](assets/mobile-demo.gif)
+![image](https://github.com/user-attachments/assets/42fc0fc4-173b-461c-ba51-6e5659bff116)
+
+
+### Result Display
+https://github.com/user-attachments/assets/3e5a298b-0b49-4389-81de-dd1b3aaf5c85
+
+![image](https://github.com/user-attachments/assets/31fa51a0-19a3-400a-b831-f9e5c8585b24)
+
+
 
 ## 🛠️ Tech Stack
 
