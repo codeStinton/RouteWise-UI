@@ -4,6 +4,18 @@
 
 RouteWise is a modern, responsive flight search application that helps users find the best flight deals across multiple airlines and destinations. With support for flexible date searches, multi-city trips, and advanced filtering options, RouteWise makes travel planning effortless.
 
+## 🛠️ Tech Stack
+
+### Frontend
+- **React 18** - UI library
+- **TypeScript** - Type safety
+- **React Router v6** - Navigation
+- **Tailwind CSS** - Styling
+- **Framer Motion** - Animations
+- **Lucide React** - Icons
+- **React DatePicker** - Date selection
+
+
 ## ✨ Features
 
 ### Core Features
@@ -53,19 +65,3 @@ https://github.com/user-attachments/assets/34c5f4b8-dd4e-405c-8e48-bb7ee373f938
 ![image](https://github.com/user-attachments/assets/94123068-feef-4c59-bd06-d20b225c6b10)
 
 
-
-
-## 🛠️ Tech Stack
-
-### Frontend
-- **React 18** - UI library
-- **TypeScript** - Type safety
-- **React Router v6** - Navigation
-- **Tailwind CSS** - Styling
-- **Framer Motion** - Animations
-- **Lucide React** - Icons
-- **React DatePicker** - Date selection
-
-### Backend Integration
-- **RESTful API** - Flight search endpoints
-- [**Amadeus API**](https://developers.amadeus.com/) - Flight data provider
